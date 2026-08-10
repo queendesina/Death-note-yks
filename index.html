@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YKS Asistanı</title>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 15px; background: #f9fafb; color: #111827; }
+    .card { background: white; padding: 16px; border-radius: 12px; border: 1px solid #e5e7eb; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .btn { background: #4f46e5; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; }
+    .btn-stop { background: #ef4444; }
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #e5e7eb; display: flex; justify: space-around; padding: 12px 0; }
+    .nav-item { border: none; background: none; color: #4f46e5; font-weight: bold; font-size: 14px; }
+  </style>
+</head>
+<body style="padding-bottom: 70px;">
+
+  <h2>YKS Akıllı Asistan</h2>
+
+  <!-- Kronometre Modülü -->
+  <div class="card" style="text-align: center;">
+    <h4 style="margin: 0 0 8px 0;">Bugünkü Çalışma Süren</h4>
+    <h1 id="timer" style="font-size: 36px; margin: 10px 0; color: #4f46e5;">00:00:00</h1>
+    <button id="timerBtn" class="btn" onclick="toggleTimer()">Çalışmayı Başlat</button>
+  </div>
+
+  <!-- TDK Kelimeler Modülü -->
+  <div class="card">
+    <h3 style="margin-top: 0; color: #374151;">Günün 10 TDK Kelimesi</h3>
+    <ol style="padding-left: 20px; margin: 0;" id="tdkList"></ol>
+  </div>
+
+  <!-- Alt Menü -->
+  <div class="bottom-nav">
+    <button class="nav-item">Anasayfa</button>
+    <button class="nav-item" style="color: #6b7280;">Dersler</button>
+    <button class="nav-item" style="color: #6b7280;">Analiz</button>
+  </div>
+
+  <script>
+    // Kronometre
+    let seconds = 0;
+    let timerId = null;
+
+    function toggleTimer() {
+      const btn = document.getElementById('timerBtn');
+      if (timerId) {
+        clearInterval(timerId);
+        timerId = null;
+        btn.innerText = 'Çalışmayı Başlat';
+        btn.classList.remove('btn-stop');
+      } else {
+        timerId = setInterval(() => {
+          seconds++;
+          const hrs = String(Math.floor(seconds / 3600)).padStart(2, '0');
+          const mins = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+          const secs = String(seconds % 60).padStart(2, '0');
+          document.getElementById('timer').innerText = `${hrs}:${mins}:${secs}`;
+        }, 1000);
+        btn.innerText = 'Durdur';
+        btn.classList.add('btn-stop');
+      }
+    }
+
+    // TDK Kelimeleri
+    const words = [
+      { w: "Liyakat", m: "Bir görevi başarma yeteneği." },
+      { w: "Mütevazı", m: "Alçak gönüllü, gösterişsiz." },
+      { w: "Feraset", m: "Çabuk sezme ve kavrama yeteneği." },
+      { w: "Girift", m: "Birbirinin içine girmiş, karmaşık." },
+      { w: "Ketum", m: "Sır saklamasını bilen, ağzı sıkı." },
+      { w: "Tahayyül", m: "Hayal etme, zihinde canlandırma." },
+      { w: "Müsamaha", m: "Hoşgörü, tolerans." },
+      { w: "Tefekkür", m: "Düşünme, zihin yorma." },
+      { w: "İhtiras", m: "Aşırı güçlü istek, tutku." },
+      { w: "Sarih", m: "Açık, belirgin, net." }
+    ];
+
+    const list = document.getElementById('tdkList');
+    words.forEach(item => {
+      const li = document.createElement('li');
+      li.style.marginBottom = '8px';
+      li.innerHTML = `<strong>${item.w}:</strong> ${item.m}`;
+      list.appendChild(li);
+    });
+  </script>
+</body>
+</html>
+
