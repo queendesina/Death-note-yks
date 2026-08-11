@@ -116,7 +116,8 @@
       projectId: "yksapp-175db",
       storageBucket: "yksapp-175db.firebasestorage.app",
       messagingSenderId: "838249144502",
-      appId: "1:838249144502:web:a25212165c9e343dc7c617"
+      appId: "1:838249144502:web:a25212165c9e343dc7c617",
+      measurementId: "G-2PKGRSYJVH"
     };
 
     firebase.initializeApp(firebaseConfig);
@@ -226,7 +227,6 @@
 
       alert(`Kaydedildi! Toplam Net (${type}): ${totalNet}`);
       
-      // Formu temizle
       document.getElementById('examTitle').value = '';
       const inputs = document.querySelectorAll('.dy-table input');
       inputs.forEach(input => input.value = '');
@@ -250,3 +250,4 @@
   </script>
 </body>
 </html>
+
