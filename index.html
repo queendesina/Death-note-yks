@@ -75,6 +75,7 @@
 
   <div class="container">
 
+    <!-- 1. ANASAYFA / KRONOMETRE / TDK -->
     <div id="p-home" class="panel active">
       <div class="card">
         <div class="card-title">📖 TDK Günün 10 Kelimesi</div>
@@ -103,14 +104,22 @@
       </div>
     </div>
 
+    <!-- 2. PROGRAM & GÜNLÜK/HAFTALIK PLAN -->
     <div id="p-program" class="panel">
       <div class="card">
-        <div class="card-title">📅 Ders Programı & Görev Ekle</div>
+        <div class="card-title">📅 Ders Programı Ekle</div>
+        
+        <select id="progType">
+          <option value="daily">📌 Günlük Görev</option>
+          <option value="weekly">🗓️ Haftalık Hedef</option>
+        </select>
+
         <input type="text" id="progTask" placeholder="Ders / Konu Adı">
         <div style="display: flex; gap: 10px;">
           <input type="number" id="progDuration" placeholder="Süre (dk)">
           <input type="number" id="progQuestions" placeholder="Soru Sayısı">
         </div>
+
         <label style="font-size: 12px; display: flex; align-items: center; gap: 8px; margin-bottom: 12px; cursor: pointer;">
           <input type="checkbox" id="progRepeat" style="width: auto; margin: 0;"> 
           Aralıklı Tekrar Sistemini Uygula (2, 7, 15, 30, 45 gün sonra otomatik atanır)
@@ -118,15 +127,22 @@
         <button class="btn" onclick="addProgramTask()">Programıma Ekle</button>
       </div>
 
+      <!-- Günlük ve Haftalık Tab'ları -->
+      <div class="sub-tabs">
+        <button class="sub-tab-btn active" onclick="switchProgTab('daily', this)">📌 Günlük Görevler</button>
+        <button class="sub-tab-btn" onclick="switchProgTab('weekly', this)">🗓️ Haftalık Plan</button>
+      </div>
+
       <div class="card">
         <div class="card-title" style="display:flex; justify-content:space-between; align-items:center;">
-          <span>📌 Programım ve Tekrar Listem</span>
+          <span id="progListTitle">📌 Günlük Görev Listem</span>
           <button onclick="clearTasks()" style="background:var(--danger); color:white; border:none; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer;">Listeyi Temizle</button>
         </div>
         <div id="taskList"></div>
       </div>
     </div>
 
+    <!-- 3. DERSLER HUB -->
     <div id="p-subjects" class="panel">
       <div id="sub-selector">
         <div class="card">
@@ -197,6 +213,7 @@
       </div>
     </div>
 
+    <!-- 4. KİŞİSEL DENEME ANALİZİ -->
     <div id="p-analysis" class="panel">
       <div class="card">
         <div class="card-title">📊 Kişisel Deneme Kaydı (Gizli)</div>
@@ -229,6 +246,7 @@
       </div>
     </div>
 
+    <!-- 5. ÜYELER ARASI MESAJLAŞMA -->
     <div id="p-chat" class="panel">
       <div class="card">
         <div class="card-title">💬 Üyelerle Mesajlaş</div>
@@ -258,6 +276,7 @@
   <script>
     const currentUser = "@ogrenci1";
     let activeSubject = "";
+    let activeProgTab = "daily";
 
     const tdkWords = [
       { w: "Müteakip", m: "Sonradan gelen, ardından" },
@@ -316,10 +335,19 @@
       document.getElementById('timerDisplay').innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
     }
 
-    // --- PROGRAM MANTIK DÜZELTMESİ ---
+    // --- PROGRAM MANTIK (GÜNLÜK & HAFTALIK) ---
     let tasks = JSON.parse(localStorage.getItem('yks_tasks') || '[]');
 
+    function switchProgTab(type, btn) {
+      activeProgTab = type;
+      document.querySelectorAll('#p-program .sub-tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('progListTitle').innerText = type === 'daily' ? '📌 Günlük Görev Listem' : '🗓️ Haftalık Plan Listem';
+      renderTasks();
+    }
+
     function addProgramTask() {
+      const type = document.getElementById('progType').value;
       const name = document.getElementById('progTask').value;
       const dur = document.getElementById('progDuration').value || 0;
       const q = document.getElementById('progQuestions').value || 0;
@@ -331,13 +359,14 @@
       }
 
       const today = new Date();
-      tasks.push({ name, dur, q, date: today.toLocaleDateString('tr-TR') });
+      tasks.push({ type, name, dur, q, date: today.toLocaleDateString('tr-TR') });
 
       if(useRep) {
         [2, 7, 15, 30, 45].forEach(days => {
           let target = new Date();
           target.setDate(today.getDate() + days);
           tasks.push({ 
+            type: type,
             name: `🔄 TEKRAR: ${name}`, 
             dur: dur, 
             q: q, 
@@ -356,15 +385,16 @@
     }
 
     function clearTasks() {
-      tasks = [];
-      localStorage.removeItem('yks_tasks');
+      tasks = tasks.filter(t => t.type !== activeProgTab);
+      localStorage.setItem('yks_tasks', JSON.stringify(tasks));
       renderTasks();
     }
 
     function renderTasks() {
-      document.getElementById('taskList').innerHTML = tasks.length === 0 
-        ? '<div style="font-size:12px; color:var(--text-muted);">Henüz görev eklenmedi.</div>'
-        : tasks.map(t => `
+      const filtered = tasks.filter(t => (t.type || 'daily') === activeProgTab);
+      document.getElementById('taskList').innerHTML = filtered.length === 0 
+        ? '<div style="font-size:12px; color:var(--text-muted);">Henüz bu kategoriye görev eklenmedi.</div>'
+        : filtered.map(t => `
           <div style="background:var(--card-inner); padding:8px; border-radius:6px; margin-bottom:6px; font-size:12px;">
             <strong>${t.name}</strong> - Süre: ${t.dur}dk | Soru: ${t.q} | Tarih: ${t.date}
           </div>
