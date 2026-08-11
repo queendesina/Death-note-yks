@@ -1,1 +1,377 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YKS Social Death Note</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+
+  <style>
+    :root { --bg: #0b0f19; --card: #151f32; --card-inner: #1e2d4a; --primary: #6366f1; --accent: #10b981; --danger: #ef4444; --text: #f8fafc; --text-muted: #94a3b8; --border: #233354; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding-bottom: 75px; }
+    #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
+    #login-box { background: var(--card); border: 1px solid var(--border); padding: 25px; border-radius: 12px; width: 100%; max-width: 360px; text-align: center; }
+    header { background: var(--card); padding: 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .user-badge { background: var(--card-inner); padding: 6px 12px; border-radius: 20px; font-size: 12px; border: 1px solid var(--border); cursor: pointer; }
+    .nav-bottom { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 8px 0; z-index: 1000; overflow-x: auto; }
+    .nav-btn { background: none; border: none; color: var(--text-muted); font-size: 10px; cursor: pointer; display: flex; flex-direction: column; align-items: center; white-space: nowrap; padding: 0 4px; }
+    .nav-btn.active { color: var(--primary); font-weight: bold; }
+    .container { padding: 15px; max-width: 800px; margin: 0 auto; }
+    .panel { display: none; } .panel.active { display: block; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 15px; }
+    input, textarea, select { width: 100%; padding: 10px; margin: 6px 0 12px 0; background: var(--bg); border: 1px solid var(--border); color: var(--text); border-radius: 8px; font-size: 14px; }
+    .btn { background: var(--primary); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; }
+    .chat-box { height: 250px; overflow-y: auto; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px; margin-bottom: 10px; }
+    .chat-msg { margin-bottom: 8px; font-size: 13px; }
+    .dy-table { width: 100%; margin-bottom: 10px; border-collapse: collapse; } 
+    .dy-table th, .dy-table td { padding: 6px; text-align: center; border-bottom: 1px solid var(--border); font-size: 13px; } 
+    .dy-table input { margin: 0; text-align: center; padding: 6px; }
+    .total-display { font-size: 18px; font-weight: bold; color: var(--accent); margin: 12px 0; text-align: center; background: var(--card-inner); padding: 10px; border-radius: 8px; border: 1px solid var(--border); }
+    .countdown-box { text-align: center; font-size: 18px; font-weight: bold; color: var(--accent); margin: 10px 0; }
+  </style>
+</head>
+<body>
+
+  <div id="login-overlay">
+    <div id="login-box">
+      <h2 style="color: var(--primary); margin-bottom: 10px;">🔒 Özel Giriş Paneli</h2>
+      <input type="email" id="emailInput" placeholder="E-posta">
+      <input type="password" id="passInput" placeholder="Şifre">
+      <button class="btn" onclick="loginWithAuth()">Giriş Yap</button>
+    </div>
+  </div>
+
+  <header>
+    <div style="font-weight: bold; color: var(--primary);">YKS Private DeathNote</div>
+    <div class="user-badge" id="currentUserDisplay" onclick="logoutWithAuth()">👤 Giriş Yapılmadı</div>
+  </header>
+
+  <div class="container">
+    <!-- 1. SOHBET PANELİ -->
+    <div id="p-chat" class="panel active">
+      <div class="card">
+        <h3>💬 Güvenli Sohbet</h3>
+        <div class="chat-box" id="chatBox"></div>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="chatInput" placeholder="Mesaj yazın..." style="margin:0;">
+          <button class="btn" style="width: auto;" onclick="sendMessage()">Gönder</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. PROGRAM & SAYAÇ PANELİ -->
+    <div id="p-program" class="panel">
+      <div class="card">
+        <h3>⏳ YKS Sayaç</h3>
+        <div class="countdown-box" id="yksCounter">Yükleniyor...</div>
+      </div>
+      <div class="card">
+        <h3>📅 Günlük & Haftalık Program</h3>
+        <textarea id="dailyWeeklyProg" rows="5" placeholder="Günlük ve haftalık hedeflerini buraya yaz..."></textarea>
+        <button class="btn" onclick="saveProgram('program_dw', 'dailyWeeklyProg')">Programı Kaydet</button>
+      </div>
+    </div>
+
+    <!-- 3. TEKRAR SİSTEMİ PANELİ -->
+    <div id="p-repeat" class="panel">
+      <div class="card">
+        <h3>🔄 Tekrar Sistemi (1-7-30 Gün)</h3>
+        <input type="text" id="repeatTopic" placeholder="Tekrar Edilecek Konu / Ders">
+        <textarea id="repeatNotes" rows="3" placeholder="Önemli detaylar, formüller..."></textarea>
+        <button class="btn" onclick="saveRepeatItem()">Tekrar Listesine Ekle</button>
+      </div>
+      <div class="card">
+        <h3>📋 Bekleyen Tekrarlar</h3>
+        <div id="repeatList"></div>
+      </div>
+    </div>
+
+    <!-- 4. HATA HAVUZU PANELİ -->
+    <div id="p-errors" class="panel">
+      <div class="card">
+        <h3>⚠️ Hata Havuzu (Yanlış Sorular / Konular)</h3>
+        <input type="text" id="errorSubject" placeholder="Ders / Konu (Örn: Limit - AYT Mat)">
+        <textarea id="errorDesc" rows="3" placeholder="Neden yanlış yaptın? Doğrusu ne?"></textarea>
+        <button class="btn" onclick="saveErrorItem()">Hata Havuzuna Ekle</button>
+      </div>
+      <div class="card">
+        <h3>🎯 Yanlışlarım & Tuzaklar</h3>
+        <div id="errorList"></div>
+      </div>
+    </div>
+
+    <!-- 5. DENEME & ANALİZ PANELİ -->
+    <div id="p-analysis" class="panel">
+      <div class="card">
+        <h3>📊 Deneme Kaydı & Hesaplama</h3>
+        <select id="examType" onchange="toggleExamFields()">
+          <option value="TYT">TYT Denemesi</option>
+          <option value="AYT">AYT Denemesi</option>
+        </select>
+        <input type="text" id="examTitle" placeholder="Deneme Adı (Örn: 3D Yayınları 1)">
+
+        <!-- TYT TABLOSU -->
+        <table class="dy-table" id="tableTyt">
+          <tr><th>Ders</th><th>Doğru</th><th>Yanlış</th></tr>
+          <tr><td>Türkçe</td><td><input type="number" id="t_trD" placeholder="0" oninput="calculateTotal()"></td><td><input type="number" id="t_trY" placeholder="0" oninput="calculateTotal()"></td></tr>
+          <tr><td>Sosyal</td><td><input type="number" id="t_sosD" placeholder="0" oninput="calculateTotal()"></td><td><input type="number" id="t_sosY" placeholder="0" oninput="calculateTotal()"></td></tr>
+          <tr><td>Matematik</td><td><input type="number" id="t_matD" placeholder="0" oninput="calculateTotal()"></td><td><input type="number" id="t_matY" placeholder="0" oninput="calculateTotal()"></td></tr>
+          <tr><td>Geometri</td><td><input type="number" id="t_geoD" placeholder="0" oninput="calculateTotal()"></td><td><input type="number" id="t_geoY" placeholder="0" oninput="calculateTotal()"></td></tr>
+          <tr><td>Fizik</td><td><input type="number" id="t_fizD" placeholder="0" oninput="calculateTotal()"></td><td><input type="number" id="t_fizY" placeholder="0" oninput="calculateTotal()"></td></tr>
+          <tr><td>Kimya</td><td><input type="number" id="t_kimD" placeholder="0" oninput="calculateTotal()"></td><td><input type="number" id="t_kimY" placeholder="0" oninput="calculateTotal()"></td></tr>
+          <tr><td>Biyoloji</td><td><input type="number" id="t_biyoD" placeholder="0" oninput="calculateTotal()"></td><td><input type="number" id="t_biyoY" placeholder="0" oninput="calculateTotal()"></td></tr>
+        </table>
+
+        <!-- AYT TABLOSU -->
+        <table class="dy-table" id="tableAyt" style="display:none;">
+          <tr><th>Ders</th><th>Doğru</th><th>Yanlış</th></tr>
+          <tr><td>Matematik</td><td><input type="number" id="a_matD" placeholder="0" oninput="calculateTotal()"></td><td><input type="number" id="a_matY" placeholder="0" oninput="calculateTotal()"></td></tr>
+          <tr><td>Geometri</td><td><input type="number" id="a_geoD" placeholder="0" oninput="calculateTotal()"></td><td><input type="number" id="a_geoY" placeholder="0" oninput="calculateTotal()"></td></tr>
+          <tr><td>Fizik</td><td><input type="number" id="a_fizD" placeholder="0" oninput="calculateTotal()"></td><td><input type="number" id="a_fizY" placeholder="0" oninput="calculateTotal()"></td></tr>
+          <tr><td>Kimya</td><td><input type="number" id="a_kimD" placeholder="0" oninput="calculateTotal()"></td><td><input type="number" id="a_kimY" placeholder="0" oninput="calculateTotal()"></td></tr>
+          <tr><td>Biyoloji</td><td><input type="number" id="a_biyoD" placeholder="0" oninput="calculateTotal()"></td><td><input type="number" id="a_biyoY" placeholder="0" oninput="calculateTotal()"></td></tr>
+        </table>
+
+        <div class="total-display">Toplam Net: <span id="liveTotalNet">0.00</span></div>
+
+        <button class="btn" onclick="saveTrial()">Denemeyi Kaydet</button>
+      </div>
+
+      <div class="card">
+        <h3>📈 Geçmiş Denemeler</h3>
+        <div id="trialHistoryList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ALT MENÜ -->
+  <div class="nav-bottom">
+    <button class="nav-btn active" onclick="switchPanel('chat', this)">💬<span>Sohbet</span></button>
+    <button class="nav-btn" onclick="switchPanel('program', this)">📅<span>Program</span></button>
+    <button class="nav-btn" onclick="switchPanel('repeat', this)">🔄<span>Tekrar</span></button>
+    <button class="nav-btn" onclick="switchPanel('errors', this)">⚠️<span>Hatalar</span></button>
+    <button class="nav-btn" onclick="switchPanel('analysis', this)">📊<span>Deneme</span></button>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyC5OH9GMtcagdpcPLwmUXysWKkAVZJxAsg",
+      authDomain: "yksapp-175db.firebaseapp.com",
+      databaseURL: "https://yksapp-175db-default-rtdb.firebaseio.com",
+      projectId: "yksapp-175db",
+      storageBucket: "yksapp-175db.firebasestorage.app",
+      messagingSenderId: "838249144502",
+      appId: "1:838249144502:web:fbe774b445cd5f1dc7c617",
+      measurementId: "G-GZWH8RNDHR"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const auth = firebase.auth();
+    let currentUser = "";
+
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        currentUser = user.email.split('@')[0];
+        document.getElementById('login-overlay').style.display = 'none';
+        document.getElementById('currentUserDisplay').innerText = '👤 ' + currentUser;
+        listenChat();
+        listenTrials();
+        listenData('program_dw', 'dailyWeeklyProg');
+        listenRepeats();
+        listenErrors();
+      } else {
+        document.getElementById('login-overlay').style.display = 'flex';
+      }
+    });
+
+    function loginWithAuth() {
+      const email = document.getElementById('emailInput').value;
+      const pass = document.getElementById('passInput').value;
+      auth.signInWithEmailAndPassword(email, pass).catch(err => alert("Giriş Hatalı: " + err.message));
+    }
+
+    function logoutWithAuth() {
+      auth.signOut();
+    }
+
+    function switchPanel(panelId, btn) {
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('p-' + panelId).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    // Sayaç
+    function updateCounter() {
+      const targetDate = new Date('2027-06-20T10:00:00').getTime();
+      const now = new Date().getTime();
+      const diff = targetDate - now;
+      if (diff > 0) {
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        document.getElementById('yksCounter').innerText = `${days} gün ${hours} saat ${minutes} dk kaldı`;
+      } else {
+        document.getElementById('yksCounter').innerText = "YKS Zamanı!";
+      }
+    }
+    setInterval(updateCounter, 1000);
+    updateCounter();
+
+    // Ortak Kayıt / Dinleme (Program vb.)
+    function saveProgram(refName, elementId) {
+      const textVal = document.getElementById(elementId).value;
+      db.ref(refName).set({ text: textVal, updatedBy: currentUser });
+      alert("Kaydedildi!");
+    }
+    function listenData(refName, elementId) {
+      db.ref(refName).on('value', snap => {
+        const data = snap.val();
+        if(data && data.text) {
+          document.getElementById(elementId).value = data.text;
+        }
+      });
+    }
+
+    // Tekrar Sistemi
+    function saveRepeatItem() {
+      const topic = document.getElementById('repeatTopic').value.trim();
+      const notes = document.getElementById('repeatNotes').value.trim();
+      if(!topic) return alert("Konu adı boş olamaz!");
+      db.ref('repeats').push({ topic, notes, user: currentUser, date: new Date().toLocaleDateString('tr-TR') });
+      document.getElementById('repeatTopic').value = '';
+      document.getElementById('repeatNotes').value = '';
+      alert("Tekrar listesine eklendi!");
+    }
+    function listenRepeats() {
+      db.ref('repeats').on('value', snap => {
+        const data = snap.val();
+        const list = document.getElementById('repeatList');
+        list.innerHTML = '';
+        if(data) {
+          Object.values(data).forEach(r => {
+            list.innerHTML += `<div style="background:var(--card-inner); padding:8px; margin-bottom:6px; border-radius:6px; font-size:12px;">
+              <b>${r.topic}</b> (${r.user})<br><span style="color:var(--text-muted);">${r.notes || ''}</span>
+            </div>`;
+          });
+        }
+      });
+    }
+
+    // Hata Havuzu
+    function saveErrorItem() {
+      const subject = document.getElementById('errorSubject').value.trim();
+      const desc = document.getElementById('errorDesc').value.trim();
+      if(!subject) return alert("Ders/Konu boş olamaz!");
+      db.ref('errors').push({ subject, desc, user: currentUser, date: new Date().toLocaleDateString('tr-TR') });
+      document.getElementById('errorSubject').value = '';
+      document.getElementById('errorDesc').value = '';
+      alert("Hata havuzuna eklendi!");
+    }
+    function listenErrors() {
+      db.ref('errors').on('value', snap => {
+        const data = snap.val();
+        const list = document.getElementById('errorList');
+        list.innerHTML = '';
+        if(data) {
+          Object.values(data).forEach(e => {
+            list.innerHTML += `<div style="background:var(--card-inner); padding:8px; margin-bottom:6px; border-radius:6px; font-size:12px;">
+              <b style="color:var(--danger);">${e.subject}</b> (${e.user})<br><span style="color:var(--text);">${e.desc}</span>
+            </div>`;
+          });
+        }
+      });
+    }
+
+    // Sohbet
+    function sendMessage() {
+      const input = document.getElementById('chatInput');
+      if(!input.value.trim()) return;
+      db.ref('messages').push({ sender: currentUser, text: input.value.trim() });
+      input.value = '';
+    }
+    function listenChat() {
+      db.ref('messages').on('value', snap => {
+        const data = snap.val();
+        const box = document.getElementById('chatBox');
+        box.innerHTML = '';
+        if(data) {
+          Object.values(data).forEach(m => {
+            box.innerHTML += `<div class="chat-msg"><b>${m.sender}:</b> ${m.text}</div>`;
+          });
+          box.scrollTop = box.scrollHeight;
+        }
+      });
+    }
+
+    // Deneme Net Hesaplama
+    function toggleExamFields() {
+      const type = document.getElementById('examType').value;
+      document.getElementById('tableTyt').style.display = type === 'TYT' ? 'table' : 'none';
+      document.getElementById('tableAyt').style.display = type === 'AYT' ? 'table' : 'none';
+      calculateTotal();
+    }
+    function getNet(dId, yId) {
+      const d = parseFloat(document.getElementById(dId)?.value) || 0;
+      const y = parseFloat(document.getElementById(yId)?.value) || 0;
+      return d - (y / 4);
+    }
+    function calculateTotal() {
+      const type = document.getElementById('examType').value;
+      let total = 0;
+      if (type === 'TYT') {
+        total += getNet('t_trD', 't_trY');
+        total += getNet('t_sosD', 't_sosY');
+        total += getNet('t_matD', 't_matY');
+        total += getNet('t_geoD', 't_geoY');
+        total += getNet('t_fizD', 't_fizY');
+        total += getNet('t_kimD', 't_kimY');
+        total += getNet('t_biyoD', 't_biyoY');
+      } else {
+        total += getNet('a_matD', 'a_matY');
+        total += getNet('a_geoD', 'a_geoY');
+        total += getNet('a_fizD', 'a_fizY');
+        total += getNet('a_kimD', 'a_kimY');
+        total += getNet('a_biyoD', 'a_biyoY');
+      }
+      document.getElementById('liveTotalNet').innerText = total.toFixed(2);
+      return total.toFixed(2);
+    }
+    function saveTrial() {
+      const type = document.getElementById('examType').value;
+      const title = document.getElementById('examTitle').value.trim() || (type + ' Denemesi');
+      const totalNet = calculateTotal();
+      db.ref('trials').push({
+        type: type,
+        title: title,
+        totalNet: totalNet,
+        user: currentUser,
+        date: new Date().toLocaleDateString('tr-TR')
+      });
+      alert(`Kaydedildi! Toplam Net (${type}): ${totalNet}`);
+      document.getElementById('examTitle').value = '';
+      document.querySelectorAll('.dy-table input').forEach(input => input.value = '');
+      calculateTotal();
+    }
+    function listenTrials() {
+      db.ref('trials').on('value', snap => {
+        const data = snap.val();
+        const list = document.getElementById('trialHistoryList');
+        list.innerHTML = '';
+        if(data) {
+          Object.values(data).forEach(t => {
+            list.innerHTML += `<div style="background:var(--card-inner); padding:8px; margin-bottom:6px; border-radius:6px; font-size:12px;">
+              <b>[${t.type}] ${t.title}</b> - Net: <b style="color:var(--accent)">${t.totalNet}</b> (${t.user}) - <span style="color:var(--text-muted);">${t.date}</span>
+            </div>`;
+          });
+        }
+      });
+    }
+  </script>
+</body>
+</html>
 
