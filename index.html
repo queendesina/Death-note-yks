@@ -77,7 +77,6 @@
     .chat-msg { margin-bottom: 8px; font-size: 13px; }
     .chat-msg .sender { font-weight: bold; color: var(--primary); cursor: pointer; }
     .chat-msg .sender:hover { text-decoration: underline; }
-    .dm-badge { background: var(--accent); color: #000; font-size: 10px; padding: 2px 6px; border-radius: 10px; margin-left: 6px; font-weight: bold; }
   </style>
 </head>
 <body>
@@ -340,7 +339,7 @@
     if (firebaseConfig.apiKey) {
       firebase.initializeApp(firebaseConfig);
     }
-    const db = firebase.apps.length ? firebase.database() : null;
+    const db = (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length) ? firebase.database() : null;
 
     let currentUser = "";
     let activeSubject = "";
@@ -607,7 +606,7 @@
       `).join('');
     }
 
-    // DENEME TAKİBİ
+    // DENEME TAKİBİ VE HESAPLAMA DÜZELTMESİ
     function switchTrialTab(type, btn) {
       document.querySelectorAll('#p-analysis .sub-tab-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
@@ -616,10 +615,10 @@
     }
 
     function calcNet(dId, yId) {
-      const dVal = document.getElementById(dId) ? document.getElementById(dId).value : 0;
-      const yVal = document.getElementById(yId) ? document.getElementById(yId).value : 0;
-      const d = parseFloat(dVal) || 0;
-      const y = parseFloat(yVal) || 0;
+      const dElem = document.getElementById(dId);
+      const yElem = document.getElementById(yId);
+      const d = dElem && dElem.value !== "" ? parseFloat(dElem.value) : 0;
+      const y = yElem && yElem.value !== "" ? parseFloat(yElem.value) : 0;
       const net = d - (y / 4);
       return { d, y, net };
     }
@@ -697,7 +696,7 @@
     function renderTrials(list) {
       document.getElementById('trialHistoryList').innerHTML = list.map(t => {
         let displayNet = t.totalNet;
-        if(!displayNet || displayNet === 'N/A' || isNaN(displayNet)) {
+        if(!displayNet || displayNet === 'N/A' || isNaN(parseFloat(displayNet))) {
           displayNet = calculateTotalFromScores(t.scores);
         }
 
@@ -717,10 +716,11 @@
       }).join('');
     }
 
-    // SOHBET (GENEL & DM KULLANICI ULAŞIMI)
+    // SOHBET VE BİREBİR MESAJ DÜZELTMELERİ
     function switchChatTab(tab, btn) {
       document.querySelectorAll('#p-chat .sub-tab-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+      if(btn) btn.classList.add('active');
+      
       document.getElementById('chat-global-box').style.display = tab === 'global' ? 'block' : 'none';
       document.getElementById('chat-dm-box').style.display = tab === 'dm' ? 'block' : 'none';
     }
@@ -765,7 +765,7 @@
       box.scrollTop = box.scrollHeight;
     }
 
-    // BİREBİR MESAJLAŞMA (DM) MANTIĞI
+    // DM YÖNETİMİ
     function getDMRoomId(user1, user2) {
       return [user1, user2].sort().join('_').replace(/[^a-zA-Z0-9_]/g, '');
     }
@@ -778,7 +778,8 @@
       document.getElementById('dmTitle').innerText = `✉️ Özel Sohbet: ${targetUser}`;
       document.getElementById('dmTargetInput').value = targetUser;
       
-      switchChatTab('dm', document.querySelectorAll('#p-chat .sub-tab-btn')[1]);
+      const dmButtons = document.querySelectorAll('#p-chat .sub-tab-btn');
+      switchChatTab('dm', dmButtons[1]);
       listenDMMessages();
     }
 
@@ -797,7 +798,10 @@
 
     function sendDMMessage() {
       const input = document.getElementById('dmInput');
-      if(!input.value.trim() || !activeDMUser) return;
+      if(!input.value.trim() || !activeDMUser) {
+        if(!activeDMUser) alert("Lütfen önce mesaj yazacağınız kişiyi seçin!");
+        return;
+      }
 
       const msgData = { sender: currentUser, receiver: activeDMUser, text: input.value.trim(), time: new Date().toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'}) };
       const roomId = getDMRoomId(currentUser, activeDMUser);
@@ -805,7 +809,7 @@
       if(db) {
         db.ref('direct_messages/' + roomId).push(msgData);
       } else {
-        let localDM = JSON.parse(localStorage.getItem('dm_' + roomId)| rhetoric ||'[]');
+        let localDM = JSON.parse(localStorage.getItem('dm_' + roomId) || '[]');
         localDM.push(msgData);
         localStorage.setItem('dm_' + roomId, JSON.stringify(localDM));
         renderDMMessages(localDM);
@@ -825,14 +829,14 @@
           renderDMMessages(data ? Object.values(data) : []);
         });
       } else {
-        renderDMMessages(JSON.parse(localStorage.getItem('dm_' + roomId)||'[]'));
+        renderDMMessages(JSON.parse(localStorage.getItem('dm_' + roomId) || '[]'));
       }
     }
 
     function renderDMMessages(list) {
       const box = document.getElementById('dmChatBox');
       box.innerHTML = '';
-      if(list.length === 0) {
+      if(!list || list.length === 0) {
         box.innerHTML = `<div style="font-size:12px; color:var(--text-muted); text-align:center; margin-top:20px;">Henüz özel mesaj yok. İlk mesajı yazın!</div>`;
         return;
       }
