@@ -1,136 +1,150 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>YKS Death Note Pro</title>
-  <style>
-    :root { --primary: #6366f1; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --border: #334155; }
-    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 10px; margin: 0; padding-bottom: 70px; }
-    .card { background: var(--card); padding: 12px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 10px; }
-    .btn { background: var(--primary); color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 5px; }
-    .page { display: none; } .page.active { display: block; }
-    .nav { position: fixed; bottom: 0; left: 0; right: 0; background: #0f172a; display: flex; justify-content: space-around; padding: 10px; border-top: 1px solid var(--border); z-index: 999; }
-    .nav-btn { color: #94a3b8; font-size: 11px; text-align: center; cursor: pointer; }
-    .nav-btn.active { color: #818cf8; }
-    input, textarea, select { width: 100%; padding: 8px; background: #0f172a; border: 1px solid var(--border); color: white; border-radius: 5px; margin: 5px 0; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YKS Master - Pro Plan</title>
+    <style>
+        :root { --bg: #0f172a; --card: #1e293b; --primary: #6366f1; --text: #f8fafc; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; padding-bottom: 80px; }
+        .tab-content { display: none; } .tab-content.active { display: block; }
+        .card { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #334155; }
+        input, select, textarea { width: 100%; padding: 10px; margin: 5px 0; background: #0f172a; border: 1px solid #475569; color: white; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 5px; }
+        .nav { position: fixed; bottom: 0; left: 0; right: 0; background: #1e293b; display: flex; justify-content: space-around; padding: 15px; border-top: 1px solid #334155; }
+        .nav-btn { cursor: pointer; color: #94a3b8; font-size: 14px; }
+        .nav-btn.active { color: var(--primary); font-weight: bold; }
+        .dy-row { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; margin-bottom: 5px; }
+        .error-img { max-width: 100%; border-radius: 8px; margin-top: 10px; display: block; }
+    </style>
 </head>
 <body>
 
-  <!-- 1. ANASAYFA -->
-  <div id="p-home" class="page active">
-    <h3>⏱️ Kronometre / Sayaç</h3>
-    <div class="card" style="text-align:center;">
-        <h1 id="timerDisplay">00:00:00</h1>
-        <input type="number" id="timerInput" placeholder="Dakika (Sadece geri sayım için)">
-        <div style="display:flex; gap:5px;">
-            <button class="btn" onclick="startTimer()">Başlat</button>
-            <button class="btn" onclick="resetTimer()" style="background:#ef4444">Sıfırla</button>
-        </div>
-    </div>
-    <h3>🎯 Hedefler</h3>
-    <div class="card"><input id="gInput"><button class="btn" onclick="addGoal()">Ekle</button><div id="gList"></div></div>
-  </div>
-
-  <!-- 2. PROGRAM -->
-  <div id="p-prog" class="page">
-    <h3>📅 Program</h3>
-    <div class="card">
-        <input id="taskName" placeholder="Konu">
-        <input type="number" id="taskDur" placeholder="Süre (dk)">
-        <input type="number" id="taskQ" placeholder="Soru Sayısı">
-        <label><input type="checkbox" id="repCheck"> Tekrar Sistemi (2,7,15,30,45)</label>
-        <button class="btn" onclick="addTask()">Kaydet</button>
-    </div>
-    <div id="taskList"></div>
-  </div>
-
-  <!-- 3. DERSLER HUB -->
-  <div id="p-sub" class="page">
-    <div id="subHub">
-        <h3>📚 Dersler</h3>
-        <button class="btn" onclick="openSubject('TYT')">TYT (Türkçe, Mat, Fen, Sosyal)</button>
-        <button class="btn" onclick="openSubject('AYT')">AYT (Sayısal)</button>
-        <button class="btn" onclick="openSubject('GEO')">Geometri</button>
-    </div>
-    <div id="subDetail" style="display:none;">
-        <button class="btn" onclick="backToHub()">⬅️ Geri</button>
-        <h3 id="subTitle"></h3>
+    <!-- 1. DENEME ANALİZİ -->
+    <div id="tab-analysis" class="tab-content active">
+        <h2>📊 Deneme Analizi</h2>
         <div class="card">
-            <h4>💡 Hafıza Kartı / Not / Detay</h4>
-            <textarea id="subNote"></textarea>
-            <button class="btn" onclick="alert('Not Kaydedildi')">Notu Kaydet</button>
+            <input type="text" id="tName" placeholder="Deneme Adı">
+            <input type="date" id="tDate">
+            <div class="dy-row"><span>Ders</span><span>D</span><span>Y</span></div>
+            <div class="dy-row"><span>Türkçe</span><input type="number" id="trD"><input type="number" id="trY"></div>
+            <div class="dy-row"><span>Mat</span><input type="number" id="maD"><input type="number" id="maY"></div>
+            <div class="dy-row"><span>Sosyal</span><input type="number" id="soD"><input type="number" id="soY"></div>
+            <div class="dy-row"><span>Fen</span><input type="number" id="feD"><input type="number" id="feY"></div>
+            <div class="dy-row"><span>Geo</span><input type="number" id="geD"><input type="number" id="geY"></div>
+            <textarea id="tNotes" placeholder="Genel notlar ve eksikler..."></textarea>
+            <button onclick="saveTrial()">Analizi Kaydet</button>
         </div>
+        <div id="trialList"></div>
+    </div>
+
+    <!-- 2. HATA DEFTERİ (TOPLU) -->
+    <div id="tab-errors" class="tab-content">
+        <h2>⚠️ Hata Defteri</h2>
         <div class="card">
-            <h4>⚠️ Hata Analizi (Fotoğraf Yükle)</h4>
+            <select id="errSub">
+                <option value="Türkçe">Türkçe</option><option value="Matematik">Matematik</option>
+                <option value="Geometri">Geometri</option><option value="Fizik">Fizik</option>
+                <option value="Kimya">Kimya</option><option value="Biyoloji">Biyoloji</option>
+            </select>
+            <input type="text" id="errTopic" placeholder="Konu Başlığı">
+            <textarea id="errDesc" placeholder="Hata detayı..."></textarea>
             <input type="file" id="errFile" accept="image/*">
-            <textarea id="errDesc" placeholder="Soru açıklaması..."></textarea>
-            <button class="btn" onclick="alert('Hata kaydedildi')">Hatayı Kaydet</button>
+            <button onclick="saveError()">Hatayı Havuza Ekle</button>
+        </div>
+        <div id="errorList"></div>
+    </div>
+
+    <!-- 3. DERSLER -->
+    <div id="tab-subjects" class="tab-content">
+        <h2>📚 Dersler</h2>
+        <div class="card">
+            <h3>TYT / AYT / GEO</h3>
+            <p>Ders seç ve notlarını/hafıza kartlarını yönet.</p>
+            <select id="subjectSelect">
+                <option value="TYT-Türkçe">TYT Türkçe</option>
+                <option value="TYT-Matematik">TYT Matematik</option>
+                <option value="AYT-Matematik">AYT Matematik</option>
+                <option value="AYT-Sayısal">AYT Sayısal (Fen)</option>
+                <option value="Geometri">Geometri</option>
+            </select>
+            <textarea id="subNote" placeholder="Buraya önemli bilgileri veya formülleri yaz..."></textarea>
+            <button onclick="saveNote()">Notu Kaydet</button>
         </div>
     </div>
-  </div>
 
-  <!-- 4. DENEME ANALİZ -->
-  <div id="p-ana" class="page">
-    <h3>📊 Deneme Analizi</h3>
-    <div class="card">
-        <input id="anaName" placeholder="Deneme Adı">
-        <select id="anaMood"><option>⚡ Odaklanmış</option><option>😴 Yorgun</option><option>😰 Stresli</option></select>
-        <div style="font-size:12px">Türkçe(D/Y):<div style="display:flex"><input id="trD"><input id="trY"></div></div>
-        <textarea id="anaMissing" placeholder="Eksik konuları yaz..."></textarea>
-        <button class="btn" onclick="saveAna()">Analizi Kaydet</button>
+    <!-- NAVIGASYON -->
+    <div class="nav">
+        <div class="nav-btn active" onclick="switchTab('analysis')">📊 Analiz</div>
+        <div class="nav-btn" onclick="switchTab('errors')">⚠️ Hata</div>
+        <div class="nav-btn" onclick="switchTab('subjects')">📚 Dersler</div>
     </div>
-    <div id="anaList"></div>
-  </div>
 
-  <!-- NAV -->
-  <div class="nav">
-    <div class="nav-btn active" onclick="showP('home', this)">🏠<br>Sayaç</div>
-    <div class="nav-btn" onclick="showP('prog', this)">📅<br>Program</div>
-    <div class="nav-btn" onclick="showP('sub', this)">📚<br>Dersler</div>
-    <div class="nav-btn" onclick="showP('ana', this)">📊<br>Analiz</div>
-  </div>
+    <script>
+        // --- CORE FUNCTIONS ---
+        function switchTab(id) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
+            document.getElementById('tab-' + id).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
 
-  <script>
-    function showP(p, el) {
-        document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
-        document.getElementById('p-'+p).classList.add('active');
-        document.querySelectorAll('.nav-btn').forEach(x => x.classList.remove('active'));
-        el.classList.add('active');
-    }
+        // --- DATA HANDLERS ---
+        function saveTrial() {
+            const data = {
+                name: document.getElementById('tName').value,
+                date: document.getElementById('tDate').value,
+                tr: document.getElementById('trD').value + "/" + document.getElementById('trY').value,
+                ma: document.getElementById('maD').value + "/" + document.getElementById('maY').value,
+                notes: document.getElementById('tNotes').value
+            };
+            let trials = JSON.parse(localStorage.getItem('trials') || '[]');
+            trials.push(data);
+            localStorage.setItem('trials', JSON.stringify(trials));
+            renderTrials();
+        }
 
-    // Basit Timer
-    let s=0; let i;
-    function startTimer() {
-        const m = document.getElementById('timerInput').value;
-        s = m ? m*60 : 0;
-        i = setInterval(() => {
-            const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60;
-            document.getElementById('timerDisplay').innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
-            s++;
-        }, 1000);
-    }
-    function resetTimer() { clearInterval(i); document.getElementById('timerDisplay').innerText="00:00:00"; }
+        function renderTrials() {
+            const list = document.getElementById('trialList');
+            const trials = JSON.parse(localStorage.getItem('trials') || '[]');
+            list.innerHTML = trials.map(t => `<div class="card"><strong>${t.name}</strong><br>Tr: ${t.tr} | Mat: ${t.ma}<br><small>${t.notes}</small></div>`).join('');
+        }
 
-    // Dersler
-    function openSubject(s) { document.getElementById('subHub').style.display='none'; document.getElementById('subDetail').style.display='block'; document.getElementById('subTitle').innerText=s; }
-    function backToHub() { document.getElementById('subHub').style.display='block'; document.getElementById('subDetail').style.display='none'; }
+        function saveError() {
+            const file = document.getElementById('errFile').files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const err = {
+                    sub: document.getElementById('errSub').value,
+                    topic: document.getElementById('errTopic').value,
+                    desc: document.getElementById('errDesc').value,
+                    img: e.target.result
+                };
+                let errors = JSON.parse(localStorage.getItem('errors') || '[]');
+                errors.push(err);
+                localStorage.setItem('errors', JSON.stringify(errors));
+                renderErrors();
+            };
+            if (file) reader.readAsDataURL(file);
+            else alert("Lütfen fotoğraf seç!");
+        }
 
-    // Kayıt
-    function saveAna() {
-        const n = document.getElementById('anaName').value;
-        document.getElementById('anaList').innerHTML += `<div class="card"><strong>${n}</strong><br>Analiz kaydedildi.</div>`;
-    }
-    function addTask() {
-        const name = document.getElementById('taskName').value;
-        document.getElementById('taskList').innerHTML += `<div class="card">${name}</div>`;
-    }
-    function addGoal() {
-        const g = document.getElementById('gInput').value;
-        document.getElementById('gList').innerHTML += `<div>✅ ${g}</div>`;
-    }
-  </script>
+        function renderErrors() {
+            const list = document.getElementById('errorList');
+            const errors = JSON.parse(localStorage.getItem('errors') || '[]');
+            list.innerHTML = errors.map(e => `
+                <div class="card">
+                    <strong>${e.sub} - ${e.topic}</strong>
+                    <p>${e.desc}</p>
+                    <img src="${e.img}" class="error-img">
+                </div>
+            `).join('');
+        }
+
+        // Init
+        renderTrials();
+        renderErrors();
+    </script>
 </body>
 </html>
 
