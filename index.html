@@ -3,38 +3,34 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>YKS Death Note - Study Hub</title>
+  <title>YKS Death Note - Pro</title>
   <style>
     :root { --primary: #6366f1; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --border: #334155; }
     body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 15px; margin: 0; padding-bottom: 80px; }
     .card { background: var(--card); padding: 16px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 12px; }
     .btn { background: var(--primary); color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; margin-top:5px; }
     .page-panel { display: none; } .page-panel.active { display: block; }
-    .nav-bottom { position: fixed; bottom: 0; left: 0; right: 0; background: #0f172a; border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 10px; }
+    .nav-bottom { position: fixed; bottom: 0; left: 0; right: 0; background: #0f172a; border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 10px; z-index: 1000; }
     .nav-item { color: #94a3b8; cursor: pointer; font-size: 12px; text-align: center; }
     .nav-item.active { color: #818cf8; }
     input, textarea, select { width: 100%; padding: 8px; margin: 5px 0; background: #0f172a; border: 1px solid var(--border); color: white; border-radius: 6px; }
-    .grid-subjects { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .subject-detail { display: none; }
-    .subject-detail.active { display: block; }
+    .grid-hub { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .view-container { display: none; } .view-container.active { display: block; }
   </style>
 </head>
 <body>
 
-  <!-- 1. ANASAYFA (TIMER) -->
+  <!-- 1. ANASAYFA -->
   <div id="panel-home" class="page-panel active">
     <h3>⏱️ Çalışma Zamanı</h3>
     <div class="card" style="text-align:center;">
       <h1 id="timerDisplay">00:00:00</h1>
-      <input type="number" id="timerInput" placeholder="Dakika gir (Boş bırakırsan kronometre olur)">
-      <div style="display:flex; gap:5px;">
-        <button class="btn" onclick="startTimer()">Başlat</button>
-        <button class="btn" style="background:#ef4444" onclick="stopTimer()">Sıfırla</button>
-      </div>
+      <input type="number" id="timerInput" placeholder="Dakika (Boşsa kronometre)">
+      <button class="btn" onclick="startTimer()">Başlat / Sıfırla</button>
     </div>
     <div class="card">
-        <h3>🎯 Günlük Hedef</h3>
-        <input type="text" id="goalInput" placeholder="Örn: 6 Saat / 500 Soru">
+        <h3>🎯 Hedeflerim</h3>
+        <input type="text" id="goalInput" placeholder="Hedef...">
         <button class="btn" onclick="addGoal()">Kaydet</button>
         <div id="goalsList"></div>
     </div>
@@ -45,39 +41,72 @@
     <h3>📅 Ders Programı</h3>
     <div class="card">
       <input type="text" id="taskName" placeholder="Ders/Konu">
-      <input type="number" id="taskDuration" placeholder="Süre (dk)">
-      <label><input type="checkbox" id="useRepeat"> Tekrar Sistemini Uygula (2,7,15,30,45 gün)</label>
-      <button class="btn" onclick="addTask()">Ekle</button>
+      <input type="number" id="taskDur" placeholder="Süre (dk)">
+      <label><input type="checkbox" id="useRepeat"> Tekrar Sistemi (2,7,15,30,45 gün)</label>
+      <button class="btn" onclick="addTask()">Programı Ekle</button>
     </div>
     <div id="taskList"></div>
   </div>
 
-  <!-- 3. DERSLER (HUB) -->
+  <!-- 3. DERSLER (TYT/AYT/GEO) -->
   <div id="panel-subjects" class="page-panel">
-    <div id="subject-hub-main">
-        <h3>📚 Derslerim</h3>
-        <div class="grid-subjects" id="subjectGrid"></div>
-    </div>
-    <!-- Detay Paneli -->
-    <div id="subject-detail-view" class="subject-detail">
-        <button class="btn" onclick="backToHub()">⬅️ Geri Dön</button>
-        <h3 id="currentSubTitle"></h3>
+    <!-- Ana Hub -->
+    <div id="hub-main" class="view-container active">
+        <h3>📚 Dersler</h3>
         <div class="card">
-            <h4>💡 Hafıza Kartları & Notlar</h4>
-            <textarea id="memCard" placeholder="Önemli bilgi yaz..."></textarea>
-            <button class="btn" onclick="saveMem()">Kaydet</button>
+            <h4>TYT</h4>
+            <div class="grid-hub">
+                <button class="btn" onclick="showSubCat('TYT_TURKCE')">Türkçe</button>
+                <button class="btn" onclick="showSubCat('TYT_MAT')">Matematik</button>
+                <button class="btn" onclick="showSubCat('TYT_FEN')">Fen Bilimleri</button>
+                <button class="btn" onclick="showSubCat('TYT_SOSYAL')">Sosyal Bilgiler</button>
+            </div>
         </div>
         <div class="card">
-            <h4>⚠️ Hata Analizi (Soru Çözümü)</h4>
-            <textarea id="errDesc" placeholder="Yanlış yaptığın soruyu veya nedenini yaz..."></textarea>
-            <button class="btn" onclick="saveError()">Hatayı Kaydet</button>
+            <h4>AYT (Sayısal)</h4>
+            <div class="grid-hub">
+                <button class="btn" onclick="showSubCat('AYT_MAT')">Matematik</button>
+                <button class="btn" onclick="showSubCat('AYT_FIZIK')">Fizik</button>
+                <button class="btn" onclick="showSubCat('AYT_KIMYA')">Kimya</button>
+                <button class="btn" onclick="showSubCat('AYT_BIYO')">Biyoloji</button>
+            </div>
+        </div>
+        <div class="card">
+            <h4>Geometri</h4>
+            <button class="btn" onclick="showSubCat('GEO_ANA')">Geometri</button>
+        </div>
+    </div>
+
+    <!-- Detay Görünümü -->
+    <div id="hub-detail" class="view-container">
+        <button class="btn" onclick="goBack()">⬅️ Geri</button>
+        <h3 id="currentSubTitle"></h3>
+        <div class="card">
+            <h4>💡 Hafıza Kartları</h4>
+            <textarea id="memCard" placeholder="Önemli bilgiyi buraya not al..."></textarea>
+            <button class="btn" onclick="saveData('mem')">Kaydet</button>
+        </div>
+        <div class="card">
+            <h4>⚠️ Hata Analizi</h4>
+            <textarea id="errDesc" placeholder="Yanlış yaptığın sorunun çözümü..."></textarea>
+            <button class="btn" onclick="saveData('err')">Kaydet</button>
+        </div>
+        <div class="card">
+            <h4>📌 Detay Bilgiler</h4>
+            <textarea id="detInfo" placeholder="Kıyıda köşede kalmış bilgiler..."></textarea>
+            <button class="btn" onclick="saveData('det')">Kaydet</button>
         </div>
     </div>
   </div>
 
   <!-- 4. ANALİZ -->
   <div id="panel-analysis" class="page-panel">
-    <h3>📊 Genel Deneme Analizi</h3>
+    <h3>📊 Deneme Analizim</h3>
+    <div class="card">
+      <input type="text" id="anaTitle" placeholder="Deneme Adı (Örn: TYT 1)">
+      <input type="number" id="anaNet" placeholder="Net Sayısı">
+      <button class="btn" onclick="saveAnalytics()">Analizi Kaydet</button>
+    </div>
     <div id="analyticsList"></div>
   </div>
 
@@ -91,36 +120,30 @@
 
   <script>
     // --- TIMER ---
-    let timerSec = 0; let interval; let isCountDown = false;
+    let timerSec = 0; let interval;
     function startTimer() {
-      const mins = document.getElementById('timerInput').value;
-      if(mins && mins > 0) { isCountDown = true; timerSec = mins * 60; } 
-      else { isCountDown = false; timerSec = 0; }
-      interval = setInterval(() => {
-        if(isCountDown) { timerSec--; if(timerSec<=0) { stopTimer(); alert("Süre bitti!"); } } 
-        else { timerSec++; }
-        const h = Math.floor(timerSec/3600), m = Math.floor((timerSec%3600)/60), s = timerSec%60;
-        document.getElementById('timerDisplay').innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-      }, 1000);
-    }
-    function stopTimer() { clearInterval(interval); timerSec=0; document.getElementById('timerDisplay').innerText="00:00:00"; }
-
-    // --- DERS HUB ---
-    const subjects = ["Biyoloji", "Matematik", "Fizik", "Kimya", "Türkçe"];
-    function renderSubjects() {
-      document.getElementById('subjectGrid').innerHTML = subjects.map(s => `<div class="card" onclick="openSubject('${s}')" style="cursor:pointer; border:1px solid #818cf8;">${s}</div>`).join('');
-    }
-    function openSubject(s) {
-        document.getElementById('subject-hub-main').style.display = 'none';
-        document.getElementById('subject-detail-view').classList.add('active');
-        document.getElementById('currentSubTitle').innerText = s;
-    }
-    function backToHub() {
-        document.getElementById('subject-hub-main').style.display = 'block';
-        document.getElementById('subject-detail-view').classList.remove('active');
+        if(interval) { clearInterval(interval); interval=null; return; }
+        const mins = document.getElementById('timerInput').value;
+        timerSec = mins * 60;
+        interval = setInterval(() => {
+            timerSec++;
+            const h = Math.floor(timerSec/3600), m = Math.floor((timerSec%3600)/60), s = timerSec%60;
+            document.getElementById('timerDisplay').innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+        }, 1000);
     }
 
-    // --- GENEL FONKSİYONLAR ---
+    // --- HUB NAVIGATION ---
+    function showSubCat(sub) {
+        document.getElementById('hub-main').classList.remove('active');
+        document.getElementById('hub-detail').classList.add('active');
+        document.getElementById('currentSubTitle').innerText = sub.replace('_',' ');
+    }
+    function goBack() {
+        document.getElementById('hub-main').classList.add('active');
+        document.getElementById('hub-detail').classList.remove('active');
+    }
+
+    // --- GENEL UI ---
     function showPanel(p, el) {
       document.querySelectorAll('.page-panel').forEach(div => div.classList.remove('active'));
       document.getElementById('panel-' + p).classList.add('active');
@@ -128,7 +151,7 @@
       el.classList.add('active');
     }
 
-    // Basit veri kaydetme (Local Storage ile çalışır)
+    // --- DATA SAVING (Basitleştirilmiş) ---
     function addTask() { 
         const name = document.getElementById('taskName').value;
         document.getElementById('taskList').innerHTML += `<div class="card">${name} eklendi.</div>`;
@@ -137,10 +160,12 @@
         const g = document.getElementById('goalInput').value;
         document.getElementById('goalsList').innerHTML += `<div>✅ ${g}</div>`;
     }
-    function saveMem() { alert("Hafıza kartı kaydedildi."); }
-    function saveError() { alert("Hata analizi kaydedildi."); }
-
-    renderSubjects();
+    function saveAnalytics() {
+        const title = document.getElementById('anaTitle').value;
+        const net = document.getElementById('anaNet').value;
+        document.getElementById('analyticsList').innerHTML += `<div class="card">${title}: <strong>${net} Net</strong></div>`;
+    }
+    function saveData(type) { alert(type + " kaydedildi!"); }
   </script>
 </body>
 </html>
