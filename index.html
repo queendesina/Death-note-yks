@@ -75,7 +75,9 @@
 
     .chat-box { height: 250px; overflow-y: auto; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px; margin-bottom: 10px; }
     .chat-msg { margin-bottom: 8px; font-size: 13px; }
-    .chat-msg .sender { font-weight: bold; color: var(--primary); }
+    .chat-msg .sender { font-weight: bold; color: var(--primary); cursor: pointer; }
+    .chat-msg .sender:hover { text-decoration: underline; }
+    .dm-badge { background: var(--accent); color: #000; font-size: 10px; padding: 2px 6px; border-radius: 10px; margin-left: 6px; font-weight: bold; }
   </style>
 </head>
 <body>
@@ -217,7 +219,7 @@
       </div>
     </div>
 
-    <!-- 4. DENEME ANALİZİ (OTOMATİK NET HESAPLAMALI) -->
+    <!-- 4. DENEME ANALİZİ -->
     <div id="p-analysis" class="panel">
       <div class="sub-tabs">
         <button class="sub-tab-btn active" onclick="switchTrialTab('tyt', this)">📘 TYT Deneme Takibi</button>
@@ -270,14 +272,44 @@
       </div>
     </div>
 
-    <!-- 5. MESAJLAŞMA (FIREBASE SOHBET) -->
+    <!-- 5. MESAJLAŞMA & BİREBİR ULAŞIM (DM) -->
     <div id="p-chat" class="panel">
-      <div class="card">
-        <div class="card-title">💬 Ortak Canlı Sohbet</div>
+      <div class="sub-tabs">
+        <button class="sub-tab-btn active" onclick="switchChatTab('global', this)">💬 Ortak Sohbet</button>
+        <button class="sub-tab-btn" onclick="switchChatTab('dm', this)">✉️ Özel Mesajlar (DM)</button>
+      </div>
+
+      <!-- ORTAK CANLI SOHBET -->
+      <div id="chat-global-box" class="card">
+        <div class="card-title">💬 Ortak Canlı Sohbet <span style="font-size: 11px; color: var(--text-muted); font-weight: normal;">(Mesaj yazanın ismine tıklayıp DM atabilirsin)</span></div>
         <div class="chat-box" id="chatBox"></div>
         <div style="display: flex; gap: 8px;">
-          <input type="text" id="chatInput" placeholder="Mesajınızı yazın..." style="margin:0;">
+          <input type="text" id="chatInput" placeholder="Genel sohbete yazın..." style="margin:0;">
           <button class="btn" style="width: auto;" onclick="sendMessage()">Gönder</button>
+        </div>
+      </div>
+
+      <!-- BİREBİR DM SOHBET PENCERESİ -->
+      <div id="chat-dm-box" class="card" style="display: none;">
+        <div class="card-title">
+          <span id="dmTitle">✉️ Özel Mesajlaşma</span>
+          <button class="btn btn-secondary" style="width: auto; padding: 4px 8px; font-size: 11px;" onclick="closeDM()">Kapat</button>
+        </div>
+        
+        <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+          <input type="text" id="dmTargetInput" placeholder="Kullanıcı adı yazın (Örn: Ahmet)" style="margin: 0;">
+          <button class="btn btn-secondary" style="width: auto; font-size: 12px; white-space: nowrap;" onclick="startDMManual()">Sohbet Başlat</button>
+        </div>
+
+        <div class="chat-box" id="dmChatBox">
+          <div style="font-size:12px; color:var(--text-muted); text-align:center; margin-top:20px;">
+            Sohbet etmek istediğiniz bir kullanıcının ismine ortak sohbette tıklayın ya da yukarıya adını yazın.
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="dmInput" placeholder="Özel mesaj yazın..." style="margin:0;">
+          <button class="btn" style="width: auto;" onclick="sendDMMessage()">Gönder</button>
         </div>
       </div>
     </div>
@@ -313,6 +345,8 @@
     let currentUser = "";
     let activeSubject = "";
     let activeProgTab = "daily";
+    let activeDMUser = "";
+    let dmListenerRef = null;
 
     function login() {
       const name = document.getElementById('usernameInput').value.trim();
@@ -573,7 +607,7 @@
       `).join('');
     }
 
-    // DENEME TAKİBİ (OTOMATİK NET HESAPLAMA EKLENDİ)
+    // DENEME TAKİBİ
     function switchTrialTab(type, btn) {
       document.querySelectorAll('#p-analysis .sub-tab-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
@@ -582,16 +616,18 @@
     }
 
     function calcNet(dId, yId) {
-      const d = parseFloat(document.getElementById(dId).value) || 0;
-      const y = parseFloat(document.getElementById(yId).value) || 0;
+      const dVal = document.getElementById(dId) ? document.getElementById(dId).value : 0;
+      const yVal = document.getElementById(yId) ? document.getElementById(yId).value : 0;
+      const d = parseFloat(dVal) || 0;
+      const y = parseFloat(yVal) || 0;
       const net = d - (y / 4);
       return { d, y, net };
     }
 
     function saveTrial(type) {
       const prefix = type.toLowerCase();
-      const title = document.getElementById(prefix + 'Title').value;
-      const date = document.getElementById(prefix + 'Date').value;
+      const title = document.getElementById(prefix + 'Title').value || `${type} Denemesi`;
+      const date = document.getElementById(prefix + 'Date').value || new Date().toLocaleDateString('tr-TR');
       const missing = document.getElementById(prefix + 'Missing').value;
 
       let scores = {};
@@ -644,30 +680,63 @@
       }
     }
 
-    function renderTrials(list) {
-      document.getElementById('trialHistoryList').innerHTML = list.map(t => `
-        <div style="background:var(--card-inner); border-left:4px solid var(--primary); padding:10px; margin-bottom:8px; border-radius:6px; font-size:12px;">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <strong>[${t.type}] ${t.title}</strong>
-            <span style="color:var(--accent); font-weight:bold; font-size:13px;">🔥 Toplam Net: ${t.totalNet || 'N/A'}</span>
-          </div>
-          <div style="color:var(--text-muted); font-size:11px; margin-bottom:6px;">Tarih: ${t.date} | 👤 ${t.user}</div>
-          <div style="margin:4px 0; color:var(--text-muted); line-height:1.6;">
-            ${Object.entries(t.scores).map(([k,v])=>`<span style="display:inline-block; margin-right:8px; background:var(--bg); padding:2px 6px; border-radius:4px;"><b>${k}:</b> ${v}</span>`).join('')}
-          </div>
-          ${t.missing ? `<div style="color:var(--danger); margin-top:4px;">⚠️ Not/Eksik: ${t.missing}</div>` : ''}
-        </div>
-      `).join('');
+    function calculateTotalFromScores(scores) {
+      if(!scores) return '0.00';
+      let sum = 0;
+      Object.values(scores).forEach(val => {
+        if(typeof val === 'string' && val.includes('Net')) {
+          const match = val.match(/\(([\d\.-]+)\s*Net\)/);
+          if(match && match[1]) {
+            sum += parseFloat(match[1]) || 0;
+          }
+        }
+      });
+      return sum.toFixed(2);
     }
 
-    // SOHBET (FIREBASE CANLI)
+    function renderTrials(list) {
+      document.getElementById('trialHistoryList').innerHTML = list.map(t => {
+        let displayNet = t.totalNet;
+        if(!displayNet || displayNet === 'N/A' || isNaN(displayNet)) {
+          displayNet = calculateTotalFromScores(t.scores);
+        }
+
+        return `
+          <div style="background:var(--card-inner); border-left:4px solid var(--primary); padding:10px; margin-bottom:8px; border-radius:6px; font-size:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <strong>[${t.type}] ${t.title}</strong>
+              <span style="color:var(--accent); font-weight:bold; font-size:13px;">🔥 Toplam Net: ${displayNet}</span>
+            </div>
+            <div style="color:var(--text-muted); font-size:11px; margin-bottom:6px;">Tarih: ${t.date} | 👤 ${t.user}</div>
+            <div style="margin:4px 0; color:var(--text-muted); line-height:1.6;">
+              ${t.scores ? Object.entries(t.scores).map(([k,v])=>`<span style="display:inline-block; margin-right:8px; background:var(--bg); padding:2px 6px; border-radius:4px;"><b>${k}:</b> ${v}</span>`).join('') : ''}
+            </div>
+            ${t.missing ? `<div style="color:var(--danger); margin-top:4px;">⚠️ Not/Eksik: ${t.missing}</div>` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    // SOHBET (GENEL & DM KULLANICI ULAŞIMI)
+    function switchChatTab(tab, btn) {
+      document.querySelectorAll('#p-chat .sub-tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('chat-global-box').style.display = tab === 'global' ? 'block' : 'none';
+      document.getElementById('chat-dm-box').style.display = tab === 'dm' ? 'block' : 'none';
+    }
+
     function sendMessage() {
       const input = document.getElementById('chatInput');
-      if(!input.value) return;
+      if(!input.value.trim()) return;
 
-      const msgData = { sender: currentUser, text: input.value };
+      const msgData = { sender: currentUser, text: input.value.trim() };
       if(db) {
         db.ref('messages').push(msgData);
+      } else {
+        let localMsgs = JSON.parse(localStorage.getItem('my_chat')||'[]');
+        localMsgs.push(msgData);
+        localStorage.setItem('my_chat', JSON.stringify(localMsgs));
+        renderChat(localMsgs);
       }
       input.value = '';
     }
@@ -676,16 +745,107 @@
       if(db) {
         db.ref('messages').on('value', snap => {
           const data = snap.val();
-          const box = document.getElementById('chatBox');
-          box.innerHTML = '';
-          if(data) {
-            Object.values(data).forEach(m => {
-              box.innerHTML += `<div class="chat-msg"><span class="sender">${m.sender}:</span> ${m.text}</div>`;
-            });
-            box.scrollTop = box.scrollHeight;
-          }
+          renderChat(data ? Object.values(data) : []);
         });
+      } else {
+        renderChat(JSON.parse(localStorage.getItem('my_chat')||'[]'));
       }
+    }
+
+    function renderChat(list) {
+      const box = document.getElementById('chatBox');
+      box.innerHTML = '';
+      list.forEach(m => {
+        box.innerHTML += `
+          <div class="chat-msg">
+            <span class="sender" onclick="openDMWith('${m.sender}')" title="Özel mesaj atmak için tıkla">${m.sender}:</span> 
+            ${m.text}
+          </div>`;
+      });
+      box.scrollTop = box.scrollHeight;
+    }
+
+    // BİREBİR MESAJLAŞMA (DM) MANTIĞI
+    function getDMRoomId(user1, user2) {
+      return [user1, user2].sort().join('_').replace(/[^a-zA-Z0-9_]/g, '');
+    }
+
+    function openDMWith(targetUser) {
+      if(!currentUser) { alert("Mesaj göndermek için giriş yapmalısınız."); return; }
+      if(targetUser === currentUser) { alert("Kendinize özel mesaj gönderemezsiniz."); return; }
+      
+      activeDMUser = targetUser;
+      document.getElementById('dmTitle').innerText = `✉️ Özel Sohbet: ${targetUser}`;
+      document.getElementById('dmTargetInput').value = targetUser;
+      
+      switchChatTab('dm', document.querySelectorAll('#p-chat .sub-tab-btn')[1]);
+      listenDMMessages();
+    }
+
+    function startDMManual() {
+      const target = document.getElementById('dmTargetInput').value.trim();
+      if(target) {
+        openDMWith(target);
+      }
+    }
+
+    function closeDM() {
+      activeDMUser = "";
+      document.getElementById('dmTitle').innerText = `✉️ Özel Mesajlaşma`;
+      document.getElementById('dmChatBox').innerHTML = `<div style="font-size:12px; color:var(--text-muted); text-align:center; margin-top:20px;">Sohbet kapatıldı. Yeni sohbet başlatabilirsiniz.</div>`;
+    }
+
+    function sendDMMessage() {
+      const input = document.getElementById('dmInput');
+      if(!input.value.trim() || !activeDMUser) return;
+
+      const msgData = { sender: currentUser, receiver: activeDMUser, text: input.value.trim(), time: new Date().toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'}) };
+      const roomId = getDMRoomId(currentUser, activeDMUser);
+
+      if(db) {
+        db.ref('direct_messages/' + roomId).push(msgData);
+      } else {
+        let localDM = JSON.parse(localStorage.getItem('dm_' + roomId)| rhetoric ||'[]');
+        localDM.push(msgData);
+        localStorage.setItem('dm_' + roomId, JSON.stringify(localDM));
+        renderDMMessages(localDM);
+      }
+      input.value = '';
+    }
+
+    function listenDMMessages() {
+      if(!activeDMUser) return;
+      const roomId = getDMRoomId(currentUser, activeDMUser);
+
+      if(db) {
+        if(dmListenerRef) dmListenerRef.off();
+        dmListenerRef = db.ref('direct_messages/' + roomId);
+        dmListenerRef.on('value', snap => {
+          const data = snap.val();
+          renderDMMessages(data ? Object.values(data) : []);
+        });
+      } else {
+        renderDMMessages(JSON.parse(localStorage.getItem('dm_' + roomId)||'[]'));
+      }
+    }
+
+    function renderDMMessages(list) {
+      const box = document.getElementById('dmChatBox');
+      box.innerHTML = '';
+      if(list.length === 0) {
+        box.innerHTML = `<div style="font-size:12px; color:var(--text-muted); text-align:center; margin-top:20px;">Henüz özel mesaj yok. İlk mesajı yazın!</div>`;
+        return;
+      }
+      list.forEach(m => {
+        const isMe = m.sender === currentUser;
+        box.innerHTML += `
+          <div class="chat-msg" style="${isMe ? 'text-align:right;' : ''}">
+            <span style="font-weight:bold; color:${isMe ? 'var(--accent)' : 'var(--primary)'}">${m.sender}</span> 
+            <span style="font-size:10px; color:var(--text-muted);">${m.time || ''}</span><br>
+            <span style="background:var(--card-inner); padding:4px 8px; border-radius:6px; display:inline-block; margin-top:2px;">${m.text}</span>
+          </div>`;
+      });
+      box.scrollTop = box.scrollHeight;
     }
   </script>
 </body>
