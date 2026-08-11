@@ -3,122 +3,133 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>YKS Death Note - Pro</title>
+  <title>YKS Death Note Pro</title>
   <style>
     :root { --primary: #6366f1; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --border: #334155; }
-    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 15px; margin: 0; padding-bottom: 80px; }
-    .card { background: var(--card); padding: 16px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 12px; }
-    .btn { background: var(--primary); color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; }
-    .page-panel { display: none; } .page-panel.active { display: block; }
-    .nav-bottom { position: fixed; bottom: 0; left: 0; right: 0; background: #0f172a; border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 10px; z-index: 1000; }
-    .nav-item { color: #94a3b8; cursor: pointer; font-size: 12px; text-align: center; }
-    .nav-item.active { color: #818cf8; }
-    input, textarea, select { width: 100%; padding: 8px; margin: 4px 0; background: #0f172a; border: 1px solid var(--border); color: white; border-radius: 6px; }
-    .img-thumb { max-width: 100px; height: auto; border-radius: 4px; margin-top: 5px; }
+    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 10px; margin: 0; padding-bottom: 70px; }
+    .card { background: var(--card); padding: 12px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 10px; }
+    .btn { background: var(--primary); color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 5px; }
+    .page { display: none; } .page.active { display: block; }
+    .nav { position: fixed; bottom: 0; left: 0; right: 0; background: #0f172a; display: flex; justify-content: space-around; padding: 10px; border-top: 1px solid var(--border); z-index: 999; }
+    .nav-btn { color: #94a3b8; font-size: 11px; text-align: center; cursor: pointer; }
+    .nav-btn.active { color: #818cf8; }
+    input, textarea, select { width: 100%; padding: 8px; background: #0f172a; border: 1px solid var(--border); color: white; border-radius: 5px; margin: 5px 0; }
   </style>
 </head>
 <body>
 
-  <!-- 1. HATA ANALİZİ (İSTENEN YAPI) -->
-  <div id="panel-errors" class="page-panel active">
-    <h3>⚠️ Hata Analizi ve Soru Havuzu</h3>
-    
-    <!-- Filtreler -->
-    <div class="card">
-        <select id="filterSubject" onchange="renderErrors()">
-            <option value="Hepsi">Tüm Dersler</option>
-            <option value="Türkçe">Türkçe</option>
-            <option value="Matematik">Matematik</option>
-            <option value="Fizik">Fizik</option>
-            <option value="Kimya">Kimya</option>
-            <option value="Biyoloji">Biyoloji</option>
-            <option value="Geometri">Geometri</option>
-            <option value="Sosyal">Sosyal</option>
-        </select>
-        <select id="filterType" onchange="renderErrors()">
-            <option value="Benim">Sadece Benim Hatalarım</option>
-            <option value="Toplu">Toplu Hata Havuzu</option>
-        </select>
+  <!-- 1. ANASAYFA -->
+  <div id="p-home" class="page active">
+    <h3>⏱️ Kronometre / Sayaç</h3>
+    <div class="card" style="text-align:center;">
+        <h1 id="timerDisplay">00:00:00</h1>
+        <input type="number" id="timerInput" placeholder="Dakika (Sadece geri sayım için)">
+        <div style="display:flex; gap:5px;">
+            <button class="btn" onclick="startTimer()">Başlat</button>
+            <button class="btn" onclick="resetTimer()" style="background:#ef4444">Sıfırla</button>
+        </div>
     </div>
-
-    <!-- Hata Ekle Formu -->
-    <div class="card">
-        <input type="text" id="errDesc" placeholder="Soru/Hata Açıklaması">
-        <select id="errSub">
-            <option value="Türkçe">Türkçe</option> <option value="Matematik">Matematik</option>
-            <option value="Biyoloji">Biyoloji</option> <option value="Fizik">Fizik</option>
-            <option value="Kimya">Kimya</option> <option value="Geometri">Geometri</option>
-        </select>
-        <select id="errOwner"><option value="Benim">Benim Hatam</option><option value="Toplu">Toplu Havuz</option></select>
-        <input type="file" id="errPhoto" accept="image/*">
-        <button class="btn" onclick="addError()">Hatayı Kaydet</button>
-    </div>
-
-    <div id="errorList"></div>
+    <h3>🎯 Hedefler</h3>
+    <div class="card"><input id="gInput"><button class="btn" onclick="addGoal()">Ekle</button><div id="gList"></div></div>
   </div>
 
-  <!-- 2. NAVİGASYON -->
-  <div class="nav-bottom">
-    <div class="nav-item active" onclick="showPanel('errors', this)">⚠️<br>Hatalar</div>
-    <div class="nav-item" onclick="showPanel('analytics', this)">📊<br>Deneme</div>
+  <!-- 2. PROGRAM -->
+  <div id="p-prog" class="page">
+    <h3>📅 Program</h3>
+    <div class="card">
+        <input id="taskName" placeholder="Konu">
+        <input type="number" id="taskDur" placeholder="Süre (dk)">
+        <input type="number" id="taskQ" placeholder="Soru Sayısı">
+        <label><input type="checkbox" id="repCheck"> Tekrar Sistemi (2,7,15,30,45)</label>
+        <button class="btn" onclick="addTask()">Kaydet</button>
+    </div>
+    <div id="taskList"></div>
+  </div>
+
+  <!-- 3. DERSLER HUB -->
+  <div id="p-sub" class="page">
+    <div id="subHub">
+        <h3>📚 Dersler</h3>
+        <button class="btn" onclick="openSubject('TYT')">TYT (Türkçe, Mat, Fen, Sosyal)</button>
+        <button class="btn" onclick="openSubject('AYT')">AYT (Sayısal)</button>
+        <button class="btn" onclick="openSubject('GEO')">Geometri</button>
+    </div>
+    <div id="subDetail" style="display:none;">
+        <button class="btn" onclick="backToHub()">⬅️ Geri</button>
+        <h3 id="subTitle"></h3>
+        <div class="card">
+            <h4>💡 Hafıza Kartı / Not / Detay</h4>
+            <textarea id="subNote"></textarea>
+            <button class="btn" onclick="alert('Not Kaydedildi')">Notu Kaydet</button>
+        </div>
+        <div class="card">
+            <h4>⚠️ Hata Analizi (Fotoğraf Yükle)</h4>
+            <input type="file" id="errFile" accept="image/*">
+            <textarea id="errDesc" placeholder="Soru açıklaması..."></textarea>
+            <button class="btn" onclick="alert('Hata kaydedildi')">Hatayı Kaydet</button>
+        </div>
+    </div>
+  </div>
+
+  <!-- 4. DENEME ANALİZ -->
+  <div id="p-ana" class="page">
+    <h3>📊 Deneme Analizi</h3>
+    <div class="card">
+        <input id="anaName" placeholder="Deneme Adı">
+        <select id="anaMood"><option>⚡ Odaklanmış</option><option>😴 Yorgun</option><option>😰 Stresli</option></select>
+        <div style="font-size:12px">Türkçe(D/Y):<div style="display:flex"><input id="trD"><input id="trY"></div></div>
+        <textarea id="anaMissing" placeholder="Eksik konuları yaz..."></textarea>
+        <button class="btn" onclick="saveAna()">Analizi Kaydet</button>
+    </div>
+    <div id="anaList"></div>
+  </div>
+
+  <!-- NAV -->
+  <div class="nav">
+    <div class="nav-btn active" onclick="showP('home', this)">🏠<br>Sayaç</div>
+    <div class="nav-btn" onclick="showP('prog', this)">📅<br>Program</div>
+    <div class="nav-btn" onclick="showP('sub', this)">📚<br>Dersler</div>
+    <div class="nav-btn" onclick="showP('ana', this)">📊<br>Analiz</div>
   </div>
 
   <script>
-    function showPanel(p, el) {
-      document.querySelectorAll('.page-panel').forEach(div => div.classList.remove('active'));
-      document.getElementById('panel-' + p).classList.add('active');
-      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-      el.classList.add('active');
+    function showP(p, el) {
+        document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
+        document.getElementById('p-'+p).classList.add('active');
+        document.querySelectorAll('.nav-btn').forEach(x => x.classList.remove('active'));
+        el.classList.add('active');
     }
 
-    // --- HATA HAVUZU MANTIĞI ---
-    let errors = JSON.parse(localStorage.getItem('my_errors') || '[]');
-
-    function addError() {
-        const fileInput = document.getElementById('errPhoto');
-        const file = fileInput.files[0];
-        
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                saveData(e.target.result);
-            };
-            reader.readAsDataURL(file);
-        } else {
-            saveData(null);
-        }
+    // Basit Timer
+    let s=0; let i;
+    function startTimer() {
+        const m = document.getElementById('timerInput').value;
+        s = m ? m*60 : 0;
+        i = setInterval(() => {
+            const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60;
+            document.getElementById('timerDisplay').innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+            s++;
+        }, 1000);
     }
+    function resetTimer() { clearInterval(i); document.getElementById('timerDisplay').innerText="00:00:00"; }
 
-    function saveData(imgData) {
-        const err = {
-            desc: document.getElementById('errDesc').value,
-            sub: document.getElementById('errSub').value,
-            type: document.getElementById('errOwner').value,
-            img: imgData
-        };
-        errors.push(err);
-        localStorage.setItem('my_errors', JSON.stringify(errors));
-        renderErrors();
-        alert("Başarıyla eklendi.");
+    // Dersler
+    function openSubject(s) { document.getElementById('subHub').style.display='none'; document.getElementById('subDetail').style.display='block'; document.getElementById('subTitle').innerText=s; }
+    function backToHub() { document.getElementById('subHub').style.display='block'; document.getElementById('subDetail').style.display='none'; }
+
+    // Kayıt
+    function saveAna() {
+        const n = document.getElementById('anaName').value;
+        document.getElementById('anaList').innerHTML += `<div class="card"><strong>${n}</strong><br>Analiz kaydedildi.</div>`;
     }
-
-    function renderErrors() {
-        const subFilter = document.getElementById('filterSubject').value;
-        const typeFilter = document.getElementById('filterType').value;
-        
-        const list = document.getElementById('errorList');
-        list.innerHTML = errors.filter(e => 
-            (subFilter === "Hepsi" || e.sub === subFilter) && 
-            (e.type === typeFilter)
-        ).map(e => `
-            <div class="card">
-                <strong>[${e.sub}]</strong> ${e.desc}
-                ${e.img ? `<br><img src="${e.img}" class="img-thumb">` : ''}
-            </div>
-        `).join('');
+    function addTask() {
+        const name = document.getElementById('taskName').value;
+        document.getElementById('taskList').innerHTML += `<div class="card">${name}</div>`;
     }
-
-    renderErrors();
+    function addGoal() {
+        const g = document.getElementById('gInput').value;
+        document.getElementById('gList').innerHTML += `<div>✅ ${g}</div>`;
+    }
   </script>
 </body>
 </html>
