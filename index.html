@@ -21,7 +21,6 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
     body { background: var(--bg); color: var(--text); padding-bottom: 75px; }
 
-    /* Header & Navigation */
     header { background: var(--card); padding: 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
     .user-badge { background: var(--card-inner); padding: 6px 12px; border-radius: 20px; font-size: 12px; border: 1px solid var(--border); }
     
@@ -29,7 +28,6 @@
     .nav-btn { background: none; border: none; color: var(--text-muted); font-size: 11px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; }
     .nav-btn.active { color: var(--primary); font-weight: bold; }
 
-    /* Layout & Panels */
     .container { padding: 15px; max-width: 800px; margin: 0 auto; }
     .panel { display: none; }
     .panel.active { display: block; }
@@ -37,7 +35,6 @@
     .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 15px; }
     .card-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
 
-    /* Forms & Controls */
     input, select, textarea { width: 100%; padding: 10px; margin: 6px 0 12px 0; background: var(--bg); border: 1px solid var(--border); color: var(--text); border-radius: 8px; font-size: 14px; }
     textarea { resize: vertical; min-height: 70px; }
     .btn { background: var(--primary); color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; text-align: center; font-size: 14px; }
@@ -45,30 +42,25 @@
     .btn-secondary { background: var(--card-inner); border: 1px solid var(--border); }
     .btn-group { display: flex; gap: 8px; }
 
-    /* TDK Words Grid */
     .tdk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-top: 10px; }
     .tdk-card { background: var(--card-inner); padding: 10px; border-radius: 8px; border: 1px solid var(--border); }
     .tdk-word { font-weight: bold; color: var(--accent); font-size: 14px; }
     .tdk-meaning { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
 
-    /* Subject Hub & Sub-tabs */
     .subject-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
     .subject-btn { background: var(--card-inner); border: 1px solid var(--border); padding: 15px; border-radius: 10px; color: white; font-weight: bold; text-align: left; cursor: pointer; }
     .sub-tabs { display: flex; gap: 5px; margin-bottom: 15px; background: var(--card-inner); padding: 5px; border-radius: 8px; }
     .sub-tab-btn { flex: 1; background: none; border: none; color: var(--text-muted); padding: 8px; border-radius: 6px; cursor: pointer; font-size: 12px; }
     .sub-tab-btn.active { background: var(--primary); color: white; }
 
-    /* Error Posts & Photos */
     .error-post { background: var(--card-inner); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 10px; }
     .error-header { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
     .error-img { width: 100%; max-height: 250px; object-fit: contain; border-radius: 6px; margin: 8px 0; background: #000; }
 
-    /* Chat UI */
     .chat-box { height: 250px; overflow-y: auto; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px; margin-bottom: 10px; }
     .chat-msg { margin-bottom: 8px; font-size: 13px; }
     .chat-msg .sender { font-weight: bold; color: var(--primary); }
 
-    /* Grid Form for Trial DY */
     .dy-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
     .dy-table td, .dy-table th { padding: 6px; font-size: 12px; text-align: center; }
     .dy-table input { margin: 0; padding: 4px; text-align: center; }
@@ -76,7 +68,6 @@
 </head>
 <body>
 
-  <!-- Auth Wrapper (Simulated Logged User) -->
   <header>
     <div style="font-weight: bold; font-size: 18px; color: var(--primary);">YKS DeathNote</div>
     <div class="user-badge" id="currentUserDisplay">👤 @ogrenci1 (Giriş Yapıldı)</div>
@@ -84,15 +75,12 @@
 
   <div class="container">
 
-    <!-- 1. ANASAYFA / KRONOMETRE / TDK -->
     <div id="p-home" class="panel active">
-      <!-- TDK Bilinen/Bilinmeyen Kelimeler -->
       <div class="card">
         <div class="card-title">📖 TDK Günün 10 Kelimesi</div>
         <div class="tdk-grid" id="tdkContainer"></div>
       </div>
 
-      <!-- Kronometre & Sayaç -->
       <div class="card" style="text-align: center;">
         <div class="card-title" style="justify-content: center;">⏱️ Çalışma Takibi</div>
         <h1 id="timerDisplay" style="font-size: 42px; margin: 15px 0; font-family: monospace;">00:00:00</h1>
@@ -105,7 +93,6 @@
         </div>
       </div>
 
-      <!-- Hedefler & Genel Özet -->
       <div class="card">
         <div class="card-title">🎯 Çalışma Analiz Özeti</div>
         <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--text-muted);">
@@ -116,7 +103,6 @@
       </div>
     </div>
 
-    <!-- 2. PROGRAM & AKILLI TEKRAR SİSTEMİ -->
     <div id="p-program" class="panel">
       <div class="card">
         <div class="card-title">📅 Ders Programı & Görev Ekle</div>
@@ -133,14 +119,15 @@
       </div>
 
       <div class="card">
-        <div class="card-title">📌 Programım ve Tekrar Listem</div>
+        <div class="card-title" style="display:flex; justify-content:space-between; align-items:center;">
+          <span>📌 Programım ve Tekrar Listem</span>
+          <button onclick="clearTasks()" style="background:var(--danger); color:white; border:none; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer;">Listeyi Temizle</button>
+        </div>
         <div id="taskList"></div>
       </div>
     </div>
 
-    <!-- 3. DERSLER HUB (TYT / AYT & SOSYAL/SAYISAL) -->
     <div id="p-subjects" class="panel">
-      <!-- Ders Seçim Ekranı -->
       <div id="sub-selector">
         <div class="card">
           <div class="card-title">📘 TYT Dersleri</div>
@@ -167,7 +154,6 @@
         </div>
       </div>
 
-      <!-- Özel Ders Paneli (Örn: Biyoloji İçeriği) -->
       <div id="sub-detail" style="display: none;">
         <button class="btn btn-secondary" style="margin-bottom: 12px; width: auto;" onclick="closeSubject()">⬅️ Derslere Dön</button>
         <h2 id="activeSubjectTitle" style="margin-bottom: 12px;">Ders</h2>
@@ -177,12 +163,11 @@
           <button class="sub-tab-btn" onclick="switchSubTab('details', this)">💡 Detay Bilgiler</button>
         </div>
 
-        <!-- Hata Analiz Sekmesi -->
         <div id="stab-errors">
           <div class="card">
             <div class="card-title">Soru / Hata Ekle</div>
             <input type="text" id="errTopic" placeholder="Konu (Örn: Hücre Solunumu)">
-            <textarea id="errDesc" placeholder="Yanlış yaptığın sorunun açıklamasını veya çözüm adımlarını yaz..."></textarea>
+            <textarea id="errDesc" placeholder="Yanlış yaptığın sorunun açıklamasını yaz..."></textarea>
             <input type="file" id="errFile" accept="image/*">
             <label style="font-size: 12px; display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
               <input type="checkbox" id="errIsPrivate" style="width: auto; margin:0;"> Sadece ben göreyim (Gizli)
@@ -190,7 +175,6 @@
             <button class="btn" onclick="addErrorPost()">Hata Havuzuna Gönder</button>
           </div>
 
-          <!-- Filtreler -->
           <div style="display: flex; gap: 8px; margin-bottom: 12px;">
             <select id="filterOwner" onchange="renderErrors()" style="margin: 0;">
               <option value="all">Karma (Tüm Üyeler + Ben)</option>
@@ -202,11 +186,10 @@
           <div id="errorFeed"></div>
         </div>
 
-        <!-- Detay Bilgiler Sekmesi -->
         <div id="stab-details" style="display: none;">
           <div class="card">
             <div class="card-title">Kıyıda Köşede Kalmış Bilgi Paylaş</div>
-            <textarea id="detText" placeholder="MEB kitabında geçen ilk defa duyduğun veya unutulan detay bir bilgiyi yaz..."></textarea>
+            <textarea id="detText" placeholder="Detay bir bilgi yaz..."></textarea>
             <button class="btn" onclick="addSubjectDetail()">Detay Bilgiyi Ekle</button>
           </div>
           <div id="detailsFeed"></div>
@@ -214,7 +197,6 @@
       </div>
     </div>
 
-    <!-- 4. KİŞİSEL DENEME ANALİZİ (ÖZEL) -->
     <div id="p-analysis" class="panel">
       <div class="card">
         <div class="card-title">📊 Kişisel Deneme Kaydı (Gizli)</div>
@@ -237,7 +219,7 @@
           <tr><td>Geometri</td><td><input type="number" id="dyGeD"></td><td><input type="number" id="dyGeY"></td></tr>
         </table>
 
-        <textarea id="trialMissing" placeholder="Hangi konulardan eksik çıkardın? (Örn: Paragrafta olumsuz kök, Fizik optik)"></textarea>
+        <textarea id="trialMissing" placeholder="Hangi konulardan eksik çıkardın?"></textarea>
         <button class="btn" onclick="saveTrialAnalysis()">Analizi Kaydet</button>
       </div>
 
@@ -247,7 +229,6 @@
       </div>
     </div>
 
-    <!-- 5. ÜYELER ARASI MESAJLAŞMA (CHAT) -->
     <div id="p-chat" class="panel">
       <div class="card">
         <div class="card-title">💬 Üyelerle Mesajlaş</div>
@@ -266,7 +247,6 @@
 
   </div>
 
-  <!-- Alt Menü -->
   <div class="nav-bottom">
     <button class="nav-btn active" onclick="switchPanel('home', this)">🏠<span>Sayaç/TDK</span></button>
     <button class="nav-btn" onclick="switchPanel('program', this)">📅<span>Program</span></button>
@@ -276,11 +256,9 @@
   </div>
 
   <script>
-    // --- VERİ Mimarisi & STATE ---
     const currentUser = "@ogrenci1";
     let activeSubject = "";
 
-    // Örnek TDK Kelimeleri
     const tdkWords = [
       { w: "Müteakip", m: "Sonradan gelen, ardından" },
       { w: "Girift", m: "Birbirine karışmış, karmaşık" },
@@ -294,7 +272,6 @@
       { w: "Muhtelif", m: "Çeşitli, çeşitli türden" }
     ];
 
-    // --- PANEL DEĞİŞİMİ ---
     function switchPanel(panelId, btn) {
       document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -302,7 +279,6 @@
       btn.classList.add('active');
     }
 
-    // --- TDK YÜKLEME ---
     function initTDK() {
       const container = document.getElementById('tdkContainer');
       container.innerHTML = tdkWords.map(item => `
@@ -313,7 +289,6 @@
       `).join('');
     }
 
-    // --- KRONOMETRE ---
     let timerInt; let seconds = 0; let isRunning = false;
     function toggleTimer() {
       if(isRunning) {
@@ -341,15 +316,19 @@
       document.getElementById('timerDisplay').innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
     }
 
-    // --- ARALIKLI TEKRAR PROGRAMI ---
+    // --- PROGRAM MANTIK DÜZELTMESİ ---
     let tasks = JSON.parse(localStorage.getItem('yks_tasks') || '[]');
+
     function addProgramTask() {
       const name = document.getElementById('progTask').value;
-      const dur = document.getElementById('progDuration').value;
-      const q = document.getElementById('progQuestions').value;
+      const dur = document.getElementById('progDuration').value || 0;
+      const q = document.getElementById('progQuestions').value || 0;
       const useRep = document.getElementById('progRepeat').checked;
 
-      if(!name) return;
+      if(!name) {
+        alert("Lütfen ders veya konu adı girin!");
+        return;
+      }
 
       const today = new Date();
       tasks.push({ name, dur, q, date: today.toLocaleDateString('tr-TR') });
@@ -358,23 +337,40 @@
         [2, 7, 15, 30, 45].forEach(days => {
           let target = new Date();
           target.setDate(today.getDate() + days);
-          tasks.push({ name: `🔄 [TEKRAR ${days}.Gün] ${name}`, dur: 15, q: 20, date: target.toLocaleDateString('tr-TR') });
+          tasks.push({ 
+            name: `🔄 TEKRAR: ${name}`, 
+            dur: dur, 
+            q: q, 
+            date: target.toLocaleDateString('tr-TR') 
+          });
         });
       }
+
       localStorage.setItem('yks_tasks', JSON.stringify(tasks));
       renderTasks();
+
       document.getElementById('progTask').value = '';
+      document.getElementById('progDuration').value = '';
+      document.getElementById('progQuestions').value = '';
+      document.getElementById('progRepeat').checked = false;
+    }
+
+    function clearTasks() {
+      tasks = [];
+      localStorage.removeItem('yks_tasks');
+      renderTasks();
     }
 
     function renderTasks() {
-      document.getElementById('taskList').innerHTML = tasks.map(t => `
-        <div style="background:var(--card-inner); padding:8px; border-radius:6px; margin-bottom:6px; font-size:12px;">
-          <strong>${t.name}</strong> - Süre: ${t.dur}dk | Soru: ${t.q} | Tarih: ${t.date}
-        </div>
-      `).join('');
+      document.getElementById('taskList').innerHTML = tasks.length === 0 
+        ? '<div style="font-size:12px; color:var(--text-muted);">Henüz görev eklenmedi.</div>'
+        : tasks.map(t => `
+          <div style="background:var(--card-inner); padding:8px; border-radius:6px; margin-bottom:6px; font-size:12px;">
+            <strong>${t.name}</strong> - Süre: ${t.dur}dk | Soru: ${t.q} | Tarih: ${t.date}
+          </div>
+        `).join('');
     }
 
-    // --- DERS & HATA MANTIĞI ---
     function openSubject(subName) {
       activeSubject = subName;
       document.getElementById('sub-selector').style.display = 'none';
@@ -394,7 +390,6 @@
       document.getElementById('stab-details').style.display = tabName === 'details' ? 'block' : 'none';
     }
 
-    // Hata Kaydı (Fotoğraflı)
     let errors = JSON.parse(localStorage.getItem('yks_errors') || '[]');
     function addErrorPost() {
       const topic = document.getElementById('errTopic').value;
@@ -434,7 +429,7 @@
       const filtered = errors.filter(e => {
         if(e.sub !== activeSubject) return false;
         if(ownerFilter === 'mine' && e.owner !== currentUser) return false;
-        if(e.isPrivate && e.owner !== currentUser) return false; // Gizli olanları başkası göremez
+        if(e.isPrivate && e.owner !== currentUser) return false;
         if(topicFilter && !e.topic.toLowerCase().includes(topicFilter)) return false;
         return true;
       });
@@ -451,7 +446,6 @@
       `).join('');
     }
 
-    // Detay Bilgiler
     let details = JSON.parse(localStorage.getItem('yks_details') || '[]');
     function addSubjectDetail() {
       const text = document.getElementById('detText').value;
@@ -470,7 +464,6 @@
       `).join('');
     }
 
-    // --- ÖZEL DENEME ANALİZİ ---
     let trials = JSON.parse(localStorage.getItem('yks_trials') || '[]');
     function saveTrialAnalysis() {
       const t = {
@@ -500,7 +493,6 @@
       `).join('');
     }
 
-    // --- MESAJLAŞMA (CHAT) ---
     function sendMessage() {
       const input = document.getElementById('chatInput');
       const target = document.getElementById('chatTargetUser').value;
@@ -512,10 +504,10 @@
       box.scrollTop = box.scrollHeight;
     }
 
-    // Başlatıcılar
     initTDK();
     renderTasks();
     renderTrialHistory();
   </script>
 </body>
 </html>
+
