@@ -3,251 +3,180 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>YKS Death Note - Akıllı Asistan</title>
+  <title>YKS Death Note - Pro</title>
   <style>
-    :root { --primary: #4f46e5; --bg: #111827; --card: #1f2937; --text: #f9fafb; --border: #374151; }
-    body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 15px; background: var(--bg); color: var(--text); padding-bottom: 80px; }
-    .card { background: var(--card); padding: 16px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
-    .btn { background: var(--primary); color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 5px; }
-    .btn-secondary { background: #374151; color: #f3f4f6; }
-    .btn-danger { background: #ef4444; color: white; }
-    .nav-tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; }
-    .tab-btn { background: #374151; color: #d1d5db; border: none; padding: 8px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer; }
-    .tab-btn.active { background: var(--primary); color: white; }
-    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #1f2937; border-top: 1px solid var(--border); display: flex; justify: space-around; padding: 10px 0; z-index: 100; }
-    .nav-item { border: none; background: none; color: #9ca3af; font-weight: bold; font-size: 12px; cursor: pointer; }
+    :root { --primary: #6366f1; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --border: #334155; --accent: #22c55e; }
+    body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 15px; background: var(--bg); color: var(--text); padding-bottom: 85px; box-sizing: border-box; }
+    .card { background: var(--card); padding: 16px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 15px; }
+    .btn { background: var(--primary); color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 6px; }
+    .btn-secondary { background: #475569; }
+    .btn-danger { background: #ef4444; }
+    .btn-success { background: #22c55e; }
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #1e293b; border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 10px 0; z-index: 100; }
+    .nav-item { border: none; background: none; color: #94a3b8; font-weight: bold; font-size: 11px; cursor: pointer; text-align: center; }
     .nav-item.active { color: #818cf8; }
-    input, textarea, select { width: 100%; padding: 10px; margin: 6px 0 12px 0; border: 1px solid var(--border); background: #374151; color: white; border-radius: 8px; box-sizing: border-box; }
-    .flashcard { background: #312e81; border: 2px dashed #6366f1; padding: 20px; border-radius: 12px; text-align: center; cursor: pointer; min-height: 100px; display: flex; align-items: center; justify-content: center; font-weight: 600; }
+    input, textarea, select { width: 100%; padding: 10px; margin: 6px 0; border: 1px solid var(--border); background: #0f172a; color: white; border-radius: 8px; }
+    .todo-item { display: flex; align-items: center; justify-content: space-between; background: #0f172a; padding: 10px; border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border); }
+    .todo-item.done span { text-decoration: line-through; color: #64748b; }
+    .chat-box { height: 250px; overflow-y: auto; background: #0f172a; border-radius: 8px; padding: 10px; margin-bottom: 10px; border: 1px solid var(--border); }
+    .chat-msg { margin-bottom: 8px; padding: 8px 12px; border-radius: 8px; max-width: 80%; }
+    .chat-msg.me { background: #4338ca; margin-left: auto; text-align: right; }
+    .chat-msg.other { background: #334155; margin-right: auto; }
     .page-panel { display: none; }
     .page-panel.active { display: block; }
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; text-align: center; margin-top: 10px; }
+    .stat-card { background: #0f172a; padding: 10px; border-radius: 8px; border: 1px solid var(--border); }
   </style>
 </head>
 <body>
 
-  <!-- BANNER -->
   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
     <h2 style="margin:0; color:#818cf8;">YKS Death Note</h2>
-    <span style="font-size:12px; color:#9ca3af;">Giriş Yapılmadı</span>
+    <span style="font-size:12px; color:#94a3b8;">🔒 Kişisel Panel</span>
   </div>
 
-  <!-- 1. ANASAYFA PANELİ -->
+  <!-- 1. ANASAYFA: SAYAÇ & HEDEFLER -->
   <div id="panel-home" class="page-panel active">
     <div class="card" style="text-align: center;">
-      <h4 style="margin: 0 0 8px 0;">Bugünkü Çalışma Süren</h4>
-      <h1 id="timer" style="font-size: 36px; margin: 10px 0; color: #818cf8;">00:00:00</h1>
-      <button id="timerBtn" class="btn" onclick="toggleTimer()">Çalışmayı Başlat</button>
+      <h4 style="margin: 0 0 8px 0;">⏱️ Çalışma Sayacı</h4>
+      <h1 id="timer" style="font-size: 40px; margin: 10px 0; color: #818cf8;">00:00:00</h1>
+      <div style="display:flex; gap:10px;">
+        <button id="timerBtn" class="btn" onclick="toggleTimer()">Başlat</button>
+        <button class="btn btn-secondary" onclick="resetTimer()">Sıfırla & Kaydet</button>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><small>Bugün</small><div id="statDaily">0 Sa</div></div>
+        <div class="stat-card"><small>Haftalık</small><div id="statWeekly">0 Sa</div></div>
+        <div class="stat-card"><small>Aylık</small><div id="statMonthly">0 Sa</div></div>
+      </div>
     </div>
-
     <div class="card">
-      <h3 style="margin-top: 0;">Günün 10 TDK Kelimesi</h3>
-      <ol style="padding-left: 20px; margin: 0;" id="tdkList"></ol>
+      <h3 style="margin-top: 0;">🎯 Hedeflerim</h3>
+      <input type="text" id="targetGoal" placeholder="Hedef (Örn: Günlük 6 Saat / 500 Soru)">
+      <select id="targetType"><option value="Günlük">Günlük</option><option value="Haftalık">Haftalık</option><option value="Aylık">Aylık</option></select>
+      <button class="btn btn-success" onclick="addGoal()">Ekle</button>
+      <div id="goalsList" style="margin-top:12px;"></div>
     </div>
   </div>
 
-  <!-- 2. DERSLER PANELİ -->
-  <div id="panel-subjects" class="page-panel">
-    <div class="nav-tabs">
-      <button class="tab-btn active" onclick="switchSubjectTab('meb', this)">MEB Kitabı</button>
-      <button class="tab-btn" onclick="switchSubjectTab('cards', this)">Hafıza Kartları</button>
-      <button class="tab-btn" onclick="switchSubjectTab('errors', this)">Hata Havuzu</button>
-      <button class="tab-btn" onclick="switchSubjectTab('details', this)">Biyoloji Detay</button>
+  <!-- 2. PROGRAM & ARALIKLI TEKRAR -->
+  <div id="panel-program" class="page-panel">
+    <div class="card">
+      <h4>🔄 Aralıklı Tekrar (2-7-15-30-45 Gün)</h4>
+      <input type="text" id="topicName" placeholder="Konu Adı (Örn: TYT Mat - Üslü Sayılar)">
+      <button class="btn btn-success" onclick="addSpacedRepetition()">Tekrar Programı Oluştur</button>
     </div>
-
-    <!-- MEB Kitabı -->
-    <div id="sub-meb" class="card">
-      <h4>Biyoloji MEB Ders Kitabı</h4>
-      <p style="font-size:13px; color:#9ca3af;">MEB müfredat kitabının tam halini inceleyin:</p>
-      <a href="https://ogmmateryal.eba.gov.tr/ders-kitabi" target="_blank" class="btn" style="display:block; text-align:center; text-decoration:none;">MEB Biyoloji PDF Aç</a>
-    </div>
-
-    <!-- Hafıza Kartları -->
-    <div id="sub-cards" class="card" style="display:none;">
-      <h4>Tekrar Hafıza Kartları</h4>
-      <div class="flashcard" onclick="flipCard()">
-        <span id="cardContent">Kartı çevirmek için tıkla: Hücre Zarı Geçirgenliği</span>
-      </div>
-      <button class="btn btn-secondary" onclick="nextCard()" style="margin-top:10px;">Sonraki Kart</button>
-    </div>
-
-    <!-- Hata Havuzu -->
-    <div id="sub-errors" style="display:none;">
-      <div class="card">
-        <h4>Yanlış Yaptığın Soruyu Paylaş</h4>
-        <input type="text" id="errTitle" placeholder="Soru / Konu Başlığı (Örn: Kalıtım Çaprazlama)">
-        <textarea id="errDesc" placeholder="Sorunun çözümünü ve nerede hata yaptığını açıkla..."></textarea>
-        <button class="btn" onclick="addError()">Soruyu Havuza Ekle</button>
-      </div>
-
-      <div style="display:flex; gap:10px; margin-bottom:10px;">
-        <button class="btn btn-secondary" onclick="filterErrors('all')">Tüm Hatalar (Karma)</button>
-        <button class="btn btn-secondary" onclick="filterErrors('mine')">Sadece Benim Hatalarım</button>
-      </div>
-
-      <div id="errorFeed"></div>
-    </div>
-
-    <!-- Biyoloji Detay -->
-    <div id="sub-details" style="display:none;">
-      <div class="card">
-        <h4>İlk Defa Duyulan / Köşe Bilgiler</h4>
-        <textarea id="detailInput" placeholder="Detay bilgiyi yaz (Örn: Çizgili kaslarda A bandının boyu değişmez...)"></textarea>
-        <button class="btn" onclick="addDetail()">Köşe Bilgi Paylaş</button>
-      </div>
-      <div id="detailFeed"></div>
+    <div class="card">
+      <h4>📋 Ders Programım</h4>
+      <div id="taskList"></div>
     </div>
   </div>
 
-  <!-- 3. KİŞİSEL DENEME & ANALİZ -->
+  <!-- 3. ANALİZ PANELİ -->
   <div id="panel-analytics" class="page-panel">
     <div class="card">
-      <h4>Yeni Deneme Analizi Ekle</h4>
+      <h4>📊 Deneme & Ruh Hali Analizi</h4>
       <input type="date" id="anaDate">
-      <input type="number" id="anaNet" placeholder="Biyoloji Net Sayısı (Örn: 11.25)">
-      <input type="text" id="anaMissing" placeholder="Eksik Çıkan Konular">
+      <input type="text" id="anaTitle" placeholder="Deneme Adı">
+      <input type="number" id="anaNet" step="0.25" placeholder="Net Sayısı">
+      <textarea id="anaMissing" placeholder="Eksik Konular"></textarea>
       <select id="anaMood">
-        <option value="Odaklanmış/Enerjik">Odaklanmış / Enerjik</option>
-        <option value="Yorgun/Stresli">Yorgun / Stresli</option>
-        <option value="Nötr/Normal">Nötr / Normal</option>
+        <option>⚡ Odaklanmış</option><option>😴 Yorgun</option><option>😰 Stresli</option>
       </select>
-      <button class="btn" onclick="addAnalysis()">Kaydet</button>
+      <button class="btn" onclick="saveAnalytics()">Kaydet</button>
     </div>
+    <div class="card" id="analyticsHistory"></div>
+  </div>
 
+  <!-- 4. MESAJLAŞMA -->
+  <div id="panel-chat" class="page-panel">
     <div class="card">
-      <h4>Geçmiş Analizlerin ve Gelişimin</h4>
-      <div id="analyticsHistory"></div>
+      <h4>💬 Üye Mesajlaşma</h4>
+      <select id="chatTarget"><option>Ahmet (Tıp Adayı)</option><option>Zeynep (Sayısal)</option></select>
+      <div class="chat-box" id="chatBox"></div>
+      <div style="display:flex; gap:8px;">
+        <input type="text" id="chatInput" placeholder="Mesaj yaz...">
+        <button class="btn" style="width:auto" onclick="sendMessage()">Gönder</button>
+      </div>
     </div>
   </div>
 
-  <!-- ALT MENÜ -->
+  <!-- ALT MÜNÜ -->
   <div class="bottom-nav">
-    <button class="nav-item active" onclick="switchNav('home', this)">Anasayfa</button>
-    <button class="nav-item" onclick="switchNav('subjects', this)">Dersler</button>
-    <button class="nav-item" onclick="switchNav('analytics', this)">Analizlerim</button>
+    <button class="nav-item active" onclick="switchNav('home', this)">🏠<br>Anasayfa</button>
+    <button class="nav-item" onclick="switchNav('program', this)">📅<br>Program</button>
+    <button class="nav-item" onclick="switchNav('analytics', this)">📊<br>Analiz</button>
+    <button class="nav-item" onclick="switchNav('chat', this)">💬<br>Mesajlar</button>
   </div>
 
   <script>
-    // Kronometre
-    let seconds = 0, timerId = null;
+    // --- SAYAÇ ---
+    let seconds = localStorage.getItem('timer_seconds') ? parseInt(localStorage.getItem('timer_seconds')) : 0;
+    let timerId = null;
+    function updateTimerDisplay() {
+      const hrs = String(Math.floor(seconds / 3600)).padStart(2, '0');
+      const mins = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+      const secs = String(seconds % 60).padStart(2, '0');
+      document.getElementById('timer').innerText = `${hrs}:${mins}:${secs}`;
+    }
+    updateTimerDisplay();
     function toggleTimer() {
-      const btn = document.getElementById('timerBtn');
-      if (timerId) {
-        clearInterval(timerId); timerId = null;
-        btn.innerText = 'Çalışmayı Başlat'; btn.classList.remove('btn-danger');
-      } else {
-        timerId = setInterval(() => {
-          seconds++;
-          const hrs = String(Math.floor(seconds / 3600)).padStart(2, '0');
-          const mins = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
-          const secs = String(seconds % 60).padStart(2, '0');
-          document.getElementById('timer').innerText = `${hrs}:${mins}:${secs}`;
-        }, 1000);
-        btn.innerText = 'Durdur'; btn.classList.add('btn-danger');
-      }
+      if (timerId) { clearInterval(timerId); timerId = null; document.getElementById('timerBtn').innerText = 'Başlat'; }
+      else { timerId = setInterval(() => { seconds++; updateTimerDisplay(); localStorage.setItem('timer_seconds', seconds); }, 1000); document.getElementById('timerBtn').innerText = 'Durdur'; }
+    }
+    function resetTimer() {
+        const hours = (seconds / 3600).toFixed(1);
+        alert(hours + " saat çalışma kaydedildi.");
+        seconds = 0; updateTimerDisplay(); localStorage.setItem('timer_seconds', 0);
+    }
+    
+    // --- TEKRAR & PROGRAM ---
+    let tasks = JSON.parse(localStorage.getItem('yks_tasks')) || [];
+    function addSpacedRepetition() {
+      const topic = document.getElementById('topicName').value;
+      [2, 7, 15, 30, 45].forEach(days => {
+        let d = new Date(); d.setDate(d.getDate() + days);
+        tasks.push({ text: `Tekrar: ${topic}`, date: d.toLocaleDateString('tr-TR') });
+      });
+      localStorage.setItem('yks_tasks', JSON.stringify(tasks));
+      renderTasks(); alert("Tekrar periyotları oluşturuldu!");
+    }
+    function renderTasks() {
+      const list = document.getElementById('taskList');
+      list.innerHTML = tasks.map((t,i) => `<div class="todo-item"><span>${t.text} (${t.date})</span></div>`).join('');
+    }
+    
+    // --- ANALİZ ---
+    function saveAnalytics() {
+      const data = { date: document.getElementById('anaDate').value, title: document.getElementById('anaTitle').value, net: document.getElementById('anaNet').value };
+      let history = JSON.parse(localStorage.getItem('yks_analytics') || '[]');
+      history.unshift(data);
+      localStorage.setItem('yks_analytics', JSON.stringify(history));
+      renderAnalytics();
+    }
+    function renderAnalytics() {
+      const hist = JSON.parse(localStorage.getItem('yks_analytics') || '[]');
+      document.getElementById('analyticsHistory').innerHTML = hist.map(h => `<p>${h.date} - ${h.title}: <strong>${h.net} Net</strong></p>`).join('');
     }
 
-    // TDK Kelimeleri
-    const words = [
-      { w: "Liyakat", m: "Bir görevi başarma yeteneği." }, { w: "Mütevazı", m: "Alçak gönüllü." },
-      { w: "Feraset", m: "Çabuk sezme ve kavrama yeteneği." }, { w: "Girift", m: "Birbirinin içine girmiş." },
-      { w: "Ketum", m: "Sır saklamasını bilen." }, { w: "Tahayyül", m: "Hayal etme." },
-      { w: "Müsamaha", m: "Hoşgörü." }, { w: "Tefekkür", m: "Düşünme, zihin yorma." },
-      { w: "İhtiras", m: "Aşırı güçlü istek." }, { w: "Sarih", m: "Açık, belirgin." }
-    ];
-    const list = document.getElementById('tdkList');
-    words.forEach(item => {
-      const li = document.createElement('li');
-      li.style.marginBottom = '6px';
-      li.innerHTML = `<strong>${item.w}:</strong> ${item.m}`;
-      list.appendChild(li);
-    });
+    // --- SOHBET ---
+    function sendMessage() {
+        const input = document.getElementById('chatInput');
+        const box = document.getElementById('chatBox');
+        if(!input.value) return;
+        box.innerHTML += `<div class="chat-msg me">${input.value}</div>`;
+        input.value = '';
+    }
 
-    // Sekme Değiştirme Mantığı
+    // --- NAV ---
     function switchNav(panelName, btn) {
-      document.querySelectorAll('.bottom-nav .nav-item').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-
       document.querySelectorAll('.page-panel').forEach(p => p.classList.remove('active'));
       document.getElementById('panel-' + panelName).classList.add('active');
     }
 
-    function switchSubjectTab(tab, btn) {
-      document.querySelectorAll('.nav-tabs .tab-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      document.getElementById('sub-meb').style.display = tab === 'meb' ? 'block' : 'none';
-      document.getElementById('sub-cards').style.display = tab === 'cards' ? 'block' : 'none';
-      document.getElementById('sub-errors').style.display = tab === 'errors' ? 'block' : 'none';
-      document.getElementById('sub-details').style.display = tab === 'details' ? 'block' : 'none';
-    }
-
-    // Hafıza Kartları
-    const flashcards = [
-      { q: "Hücre zarından madde geçişinde ATP harcanır mı?", a: "Pasif taşımada harcanmaz, Aktif taşımada harcanır." },
-      { q: "Enzimlerin yapısını bozan yüksek sıcaklık olayına ne denir?", a: "Denatürasyon." },
-      { q: "Fotosentezde oksijenin kaynağı nedir?", a: "Su (H2O)." }
-    ];
-    let cardIdx = 0, isAnswer = false;
-    function flipCard() {
-      isAnswer = !isAnswer;
-      const box = document.getElementById('cardContent');
-      box.innerText = isAnswer ? "Cevap: " + flashcards[cardIdx].a : "Soru: " + flashcards[cardIdx].q;
-    }
-    function nextCard() {
-      cardIdx = (cardIdx + 1) % flashcards.length;
-      isAnswer = false;
-      document.getElementById('cardContent').innerText = "Soru: " + flashcards[cardIdx].q;
-    }
-
-    // Hata Havuzu
-    let errorList = [];
-    function addError() {
-      const title = document.getElementById('errTitle').value;
-      const desc = document.getElementById('errDesc').value;
-      if(!title || !desc) return alert("Lütfen alanları doldurun!");
-      errorList.unshift({ title, desc, user: "Ben" });
-      renderErrors(errorList);
-      document.getElementById('errTitle').value = ''; document.getElementById('errDesc').value = '';
-    }
-    function renderErrors(arr) {
-      const feed = document.getElementById('errorFeed');
-      feed.innerHTML = arr.map(e => `
-        <div class="card" style="border-left: 4px solid #818cf8;">
-          <strong style="color:#818cf8;">${e.title}</strong> <small>(${e.user})</small>
-          <p style="margin:5px 0 0 0; font-size:14px;">${e.desc}</p>
-        </div>
-      `).join('');
-    }
-    function filterErrors(type) {
-      if(type === 'mine') renderErrors(errorList.filter(e => e.user === 'Ben'));
-      else renderErrors(errorList);
-    }
-
-    // Biyoloji Detay
-    function addDetail() {
-      const text = document.getElementById('detailInput').value;
-      if(!text) return;
-      const feed = document.getElementById('detailFeed');
-      feed.innerHTML = `<div class="card">📌 <strong>Köşe Bilgi:</strong> ${text}</div>` + feed.innerHTML;
-      document.getElementById('detailInput').value = '';
-    }
-
-    // Analiz Takibi
-    function addAnalysis() {
-      const date = document.getElementById('anaDate').value;
-      const net = document.getElementById('anaNet').value;
-      const missing = document.getElementById('anaMissing').value;
-      const mood = document.getElementById('anaMood').value;
-      if(!date || !net) return alert("Tarih ve Net giriniz!");
-      
-      const box = document.getElementById('analyticsHistory');
-      box.innerHTML = `
-        <div style="border-bottom:1px solid #374151; padding:8px 0;">
-          <strong>📅 ${date}</strong> - Net: <span style="color:#818cf8; font-weight:bold;">${net}</span><br>
-          <small style="color:#9ca3af;">Eksikler: ${missing || 'Yok'} | Ruh Hali: ${mood}</small>
-        </div>
-      ` + box.innerHTML;
-    }
+    renderTasks(); renderAnalytics();
   </script>
 </body>
 </html>
