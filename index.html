@@ -5,70 +5,571 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>YKS Social Death Note</title>
   <style>
-    :root { --bg: #0b0f19; --card: #151f32; --card-inner: #1e2d4a; --primary: #6366f1; --accent: #10b981; --text: #f8fafc; --text-muted: #94a3b8; --border: #233354; }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+    :root {
+      --bg: #0b0f19;
+      --card: #151f32;
+      --card-inner: #1e2d4a;
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --accent: #10b981;
+      --danger: #ef4444;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #233354;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
     body { background: var(--bg); color: var(--text); padding-bottom: 75px; }
 
-    /* Giriş Ekranı Stili */
+    /* GİRİŞ EKRANI */
     #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
-    
+    #login-box { background: var(--card); border: 1px solid var(--border); padding: 25px; border-radius: 12px; width: 100%; max-width: 360px; text-align: center; }
+
     header { background: var(--card); padding: 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
-    .user-badge { background: var(--card-inner); padding: 6px 12px; border-radius: 20px; font-size: 12px; border: 1px solid var(--border); }
+    .user-badge { background: var(--card-inner); padding: 6px 12px; border-radius: 20px; font-size: 12px; border: 1px solid var(--border); cursor: pointer; }
     
+    .nav-bottom { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 10px 0; z-index: 1000; }
+    .nav-btn { background: none; border: none; color: var(--text-muted); font-size: 11px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .nav-btn.active { color: var(--primary); font-weight: bold; }
+
     .container { padding: 15px; max-width: 800px; margin: 0 auto; }
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 15px; }
-    .btn { background: var(--primary); color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; }
-    input { width: 100%; padding: 10px; margin: 10px 0; background: var(--bg); border: 1px solid var(--border); color: white; border-radius: 8px; }
-    
     .panel { display: none; }
     .panel.active { display: block; }
-    .nav-bottom { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 10px 0; }
+
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 15px; }
+    .card-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+
+    input, select, textarea { width: 100%; padding: 10px; margin: 6px 0 12px 0; background: var(--bg); border: 1px solid var(--border); color: var(--text); border-radius: 8px; font-size: 14px; }
+    textarea { resize: vertical; min-height: 70px; }
+    .btn { background: var(--primary); color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; text-align: center; font-size: 14px; }
+    .btn:hover { background: var(--primary-hover); }
+    .btn-secondary { background: var(--card-inner); border: 1px solid var(--border); }
+    .btn-group { display: flex; gap: 8px; }
+
+    .tdk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-top: 10px; }
+    .tdk-card { background: var(--card-inner); padding: 10px; border-radius: 8px; border: 1px solid var(--border); }
+    .tdk-word { font-weight: bold; color: var(--accent); font-size: 14px; }
+    .tdk-meaning { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+    .subject-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .subject-btn { background: var(--card-inner); border: 1px solid var(--border); padding: 15px; border-radius: 10px; color: white; font-weight: bold; text-align: left; cursor: pointer; }
+    .sub-tabs { display: flex; gap: 5px; margin-bottom: 15px; background: var(--card-inner); padding: 5px; border-radius: 8px; }
+    .sub-tab-btn { flex: 1; background: none; border: none; color: var(--text-muted); padding: 8px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+    .sub-tab-btn.active { background: var(--primary); color: white; }
+
+    .task-item { background: var(--card-inner); padding: 10px; border-radius: 8px; margin-bottom: 6px; font-size: 13px; display: flex; align-items: center; gap: 10px; border: 1px solid var(--border); transition: all 0.2s; }
+    .task-item.completed { opacity: 0.5; text-decoration: line-through; }
+    .task-checkbox { width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent); margin: 0; }
+
+    .error-post { background: var(--card-inner); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 10px; }
+    .error-header { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+    .error-img { width: 100%; max-height: 250px; object-fit: contain; border-radius: 6px; margin: 8px 0; background: #000; }
+
+    .chat-box { height: 250px; overflow-y: auto; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px; margin-bottom: 10px; }
+    .chat-msg { margin-bottom: 8px; font-size: 13px; }
+    .chat-msg .sender { font-weight: bold; color: var(--primary); }
+
+    .dy-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+    .dy-table td, .dy-table th { padding: 6px; font-size: 12px; text-align: center; }
+    .dy-table input { margin: 0; padding: 4px; text-align: center; }
   </style>
 </head>
 <body>
 
   <!-- GİRİŞ EKRANI -->
   <div id="login-overlay">
-    <h2 style="color: var(--primary); margin-bottom: 20px;">YKS DeathNote</h2>
-    <p style="margin-bottom: 10px;">Kullanıcı adını girerek başla:</p>
-    <input type="text" id="usernameInput" placeholder="Örn: Ahmet">
-    <button class="btn" onclick="login()">Giriş Yap</button>
+    <div id="login-box">
+      <h2 style="color: var(--primary); margin-bottom: 10px;">YKS DeathNote</h2>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">Kullanıcı adını girerek giriş yap:</p>
+      <input type="text" id="usernameInput" placeholder="Kullanıcı Adı (Örn: Ahmet)">
+      <button class="btn" onclick="login()">Giriş Yap</button>
+    </div>
   </div>
 
   <header>
     <div style="font-weight: bold; font-size: 18px; color: var(--primary);">YKS DeathNote</div>
-    <div class="user-badge" id="currentUserDisplay">👤 Giriş bekleniyor...</div>
+    <div class="user-badge" id="currentUserDisplay" onclick="logout()">👤 Giriş Bekleniyor</div>
   </header>
 
   <div class="container">
+
+    <!-- 1. ANASAYFA / KRONOMETRE / TDK -->
     <div id="p-home" class="panel active">
       <div class="card">
-        <h3>Hoş geldin!</h3>
-        <p>Programın ve analizlerin burada yerel olarak tutuluyor.</p>
+        <div class="card-title">📖 TDK Günün 10 Kelimesi</div>
+        <div class="tdk-grid" id="tdkContainer"></div>
+      </div>
+
+      <div class="card" style="text-align: center;">
+        <div class="card-title" style="justify-content: center;">⏱️ Çalışma Takibi</div>
+        <h1 id="timerDisplay" style="font-size: 42px; margin: 15px 0; font-family: monospace;">00:00:00</h1>
+        <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+          <input type="number" id="timerInput" placeholder="Geri sayım için dakika (İsteğe Bağlı)">
+        </div>
+        <div class="btn-group">
+          <button class="btn" onclick="toggleTimer()">Başlat / Durdur</button>
+          <button class="btn btn-secondary" onclick="resetTimer()">Sıfırla</button>
+        </div>
       </div>
     </div>
-    <!-- (Diğer panellerin aynen burada kalacak...) -->
+
+    <!-- 2. PROGRAM & GÜNLÜK/HAFTALIK PLAN -->
+    <div id="p-program" class="panel">
+      <div class="card">
+        <div class="card-title">📅 Ders Programı Ekle</div>
+        
+        <select id="progType">
+          <option value="daily">📌 Günlük Görev</option>
+          <option value="weekly">🗓️ Haftalık Hedef</option>
+        </select>
+
+        <input type="text" id="progTask" placeholder="Ders / Konu Adı">
+        <div style="display: flex; gap: 10px;">
+          <input type="number" id="progDuration" placeholder="Süre (dk)">
+          <input type="number" id="progQuestions" placeholder="Soru Sayısı">
+        </div>
+
+        <label style="font-size: 12px; display: flex; align-items: center; gap: 8px; margin-bottom: 12px; cursor: pointer;">
+          <input type="checkbox" id="progRepeat" style="width: auto; margin: 0;"> 
+          Aralıklı Tekrar Sistemini Uygula (2, 7, 15, 30, 45 gün sonra günü gelince hatırlatılır)
+        </label>
+        <button class="btn" onclick="addProgramTask()">Programıma Ekle</button>
+      </div>
+
+      <div class="sub-tabs">
+        <button class="sub-tab-btn active" onclick="switchProgTab('daily', this)">📌 Günlük Görevler</button>
+        <button class="sub-tab-btn" onclick="switchProgTab('weekly', this)">🗓️ Haftalık Plan</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="display:flex; justify-content:space-between; align-items:center;">
+          <span id="progListTitle">📌 Günlük Görev Listem</span>
+          <button onclick="clearTasks()" style="background:var(--danger); color:white; border:none; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer;">Listeyi Temizle</button>
+        </div>
+        <div id="taskList"></div>
+      </div>
+    </div>
+
+    <!-- 3. DERSLER HUB -->
+    <div id="p-subjects" class="panel">
+      <div id="sub-selector">
+        <div class="card">
+          <div class="card-title">📘 TYT Dersleri</div>
+          <div class="subject-grid">
+            <button class="subject-btn" onclick="openSubject('TYT Türkçe')">Türkçe</button>
+            <button class="subject-btn" onclick="openSubject('TYT Matematik')">Matematik</button>
+            <button class="subject-btn" onclick="openSubject('TYT Geometri')">Geometri</button>
+            <button class="subject-btn" onclick="openSubject('TYT Fizik')">Fizik</button>
+            <button class="subject-btn" onclick="openSubject('TYT Kimya')">Kimya</button>
+            <button class="subject-btn" onclick="openSubject('TYT Biyoloji')">Biyoloji</button>
+            <button class="subject-btn" onclick="openSubject('TYT Sosyal')" style="grid-column: span 2;">Sosyal Bilimler</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">📙 AYT Dersleri (Sayısal)</div>
+          <div class="subject-grid">
+            <button class="subject-btn" onclick="openSubject('AYT Matematik')">Matematik</button>
+            <button class="subject-btn" onclick="openSubject('AYT Geometri')">Geometri</button>
+            <button class="subject-btn" onclick="openSubject('AYT Fizik')">Fizik</button>
+            <button class="subject-btn" onclick="openSubject('AYT Kimya')">Kimya</button>
+            <button class="subject-btn" onclick="openSubject('AYT Biyoloji')">Biyoloji</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="sub-detail" style="display: none;">
+        <button class="btn btn-secondary" style="margin-bottom: 12px; width: auto;" onclick="closeSubject()">⬅️ Derslere Dön</button>
+        <h2 id="activeSubjectTitle" style="margin-bottom: 12px;">Ders</h2>
+
+        <div class="sub-tabs">
+          <button class="sub-tab-btn active" onclick="switchSubTab('errors', this)">⚠️ Hata Analiz</button>
+          <button class="sub-tab-btn" onclick="switchSubTab('details', this)">💡 Detay Bilgiler</button>
+        </div>
+
+        <div id="stab-errors">
+          <div class="card">
+            <div class="card-title">Soru / Hata Ekle</div>
+            <input type="text" id="errTopic" placeholder="Konu (Örn: Hücre Solunumu)">
+            <textarea id="errDesc" placeholder="Yanlış yaptığın sorunun açıklamasını yaz..."></textarea>
+            <input type="file" id="errFile" accept="image/*">
+            <label style="font-size: 12px; display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+              <input type="checkbox" id="errIsPrivate" style="width: auto; margin:0;"> Sadece ben göreyim (Gizli)
+            </label>
+            <button class="btn" onclick="addErrorPost()">Hata Havuzuna Gönder</button>
+          </div>
+
+          <div id="errorFeed"></div>
+        </div>
+
+        <div id="stab-details" style="display: none;">
+          <div class="card">
+            <div class="card-title">Kıyıda Köşede Kalmış Bilgi Paylaş</div>
+            <textarea id="detText" placeholder="Detay bir bilgi yaz..."></textarea>
+            <button class="btn" onclick="addSubjectDetail()">Detay Bilgiyi Ekle</button>
+          </div>
+          <div id="detailsFeed"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. KİŞİSEL DENEME ANALİZİ -->
+    <div id="p-analysis" class="panel">
+      <div class="card">
+        <div class="card-title">📊 Kişisel Deneme Kaydı</div>
+        <input type="text" id="trialTitle" placeholder="Deneme Adı (Örn: Özdebir TYT-3)">
+        <input type="date" id="trialDate">
+        
+        <select id="trialMood">
+          <option value="⚡ Odaklanmış / Mükemmel">⚡ Odaklanmış / Mükemmel</option>
+          <option value="😐 Normal / Ortalama">😐 Normal / Ortalama</option>
+          <option value="😴 Yorgun / Dikkatsiz">😴 Yorgun / Dikkatsiz</option>
+          <option value="😰 Stresli / Zaman Yetmedi">😰 Stresli / Zaman Yetmedi</option>
+        </select>
+
+        <p style="font-size: 12px; font-weight: bold; margin: 8px 0;">Ders Doğru / Yanlış Sayıları:</p>
+        <table class="dy-table">
+          <tr><th>Ders</th><th>Doğru</th><th>Yanlış</th></tr>
+          <tr><td>Türkçe/Sosyal</td><td><input type="number" id="dyTrD"></td><td><input type="number" id="dyTrY"></td></tr>
+          <tr><td>Matematik</td><td><input type="number" id="dyMaD"></td><td><input type="number" id="dyMaY"></td></tr>
+          <tr><td>Fen / Ayt Fen</td><td><input type="number" id="dyFeD"></td><td><input type="number" id="dyFeY"></td></tr>
+        </table>
+
+        <textarea id="trialMissing" placeholder="Hangi konulardan eksik çıkardın?"></textarea>
+        <button class="btn" onclick="saveTrialAnalysis()">Analizi Kaydet</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📈 Geçmiş Deneme Geçmişim</div>
+        <div id="trialHistoryList"></div>
+      </div>
+    </div>
+
+    <!-- 5. MESAJLAŞMA -->
+    <div id="p-chat" class="panel">
+      <div class="card">
+        <div class="card-title">💬 Mesajlar</div>
+        <div class="chat-box" id="chatBox"></div>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="chatInput" placeholder="Mesajınızı yazın..." style="margin:0;">
+          <button class="btn" style="width: auto;" onclick="sendMessage()">Gönder</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ALT NAVİGASYON MENÜSÜ -->
+  <div class="nav-bottom">
+    <button class="nav-btn active" onclick="switchPanel('home', this)">🏠<span>Sayaç/TDK</span></button>
+    <button class="nav-btn" onclick="switchPanel('program', this)">📅<span>Program</span></button>
+    <button class="nav-btn" onclick="switchPanel('subjects', this)">📚<span>Dersler</span></button>
+    <button class="nav-btn" onclick="switchPanel('analysis', this)">📊<span>Deneme</span></button>
+    <button class="nav-btn" onclick="switchPanel('chat', this)">💬<span>Sohbet</span></button>
   </div>
 
   <script>
-    // Giriş Kontrolü
+    let currentUser = "";
+    let activeSubject = "";
+    let activeProgTab = "daily";
+
+    // GİRİŞ / ÇIKIŞ İŞLEMLERİ
     function login() {
-      const name = document.getElementById('usernameInput').value;
+      const name = document.getElementById('usernameInput').value.trim();
       if(name) {
+        currentUser = name;
         localStorage.setItem('yks_username', name);
         document.getElementById('login-overlay').style.display = 'none';
         document.getElementById('currentUserDisplay').innerText = '👤 ' + name;
+      } else {
+        alert("Lütfen bir kullanıcı adı gir!");
       }
     }
 
-    // Sayfa açıldığında isim kayıtlı mı kontrol et
+    function logout() {
+      if(confirm("Çıkış yapmak veya kullanıcı adını değiştirmek istiyor musun?")) {
+        localStorage.removeItem('yks_username');
+        location.reload();
+      }
+    }
+
     window.onload = function() {
       const savedUser = localStorage.getItem('yks_username');
       if(savedUser) {
+        currentUser = savedUser;
         document.getElementById('login-overlay').style.display = 'none';
         document.getElementById('currentUserDisplay').innerText = '👤 ' + savedUser;
       }
+      initTDK();
+      renderTasks();
+      renderTrialHistory();
     };
+
+    const tdkWords = [
+      { w: "Müteakip", m: "Sonradan gelen, ardından" },
+      { w: "Girift", m: "Birbirine karışmış, karmaşık" },
+      { w: "Süreğen", m: "Sürüp giden, kronik" },
+      { w: "İlliyet", m: "Neden-sonuç bağı" },
+      { w: "Ketum", m: "Sır saklayan" },
+      { w: "Salık vermek", m: "Tavsiye etmek" },
+      { w: "Nispeten", m: "Göreceli olarak" },
+      { w: "Aplikasyon", m: "Uygulama, pratik" },
+      { w: "Liyakat", m: "Uygunluk, yetenek" },
+      { w: "Muhtelif", m: "Çeşitli, çeşitli türden" }
+    ];
+
+    function switchPanel(panelId, btn) {
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('p-' + panelId).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    function initTDK() {
+      const container = document.getElementById('tdkContainer');
+      container.innerHTML = tdkWords.map(item => `
+        <div class="tdk-card">
+          <div class="tdk-word">${item.w}</div>
+          <div class="tdk-meaning">${item.m}</div>
+        </div>
+      `).join('');
+    }
+
+    let timerInt; let seconds = 0; let isRunning = false;
+    function toggleTimer() {
+      if(isRunning) {
+        clearInterval(timerInt);
+        isRunning = false;
+      } else {
+        const inpMins = document.getElementById('timerInput').value;
+        if(inpMins && seconds === 0) seconds = inpMins * 60;
+        
+        timerInt = setInterval(() => {
+          if(inpMins) {
+            seconds--;
+            if(seconds <= 0) { clearInterval(timerInt); alert("Süre Doldu!"); isRunning = false; }
+          } else {
+            seconds++;
+          }
+          updateTimerDisplay();
+        }, 1000);
+        isRunning = true;
+      }
+    }
+    function resetTimer() { clearInterval(timerInt); isRunning = false; seconds = 0; updateTimerDisplay(); }
+    function updateTimerDisplay() {
+      const h = Math.floor(Math.abs(seconds)/3600), m = Math.floor((Math.abs(seconds)%3600)/60), s = Math.abs(seconds)%60;
+      document.getElementById('timerDisplay').innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    }
+
+    // PROGRAM VE GÖREV LİSTESİ
+    let tasks = JSON.parse(localStorage.getItem('yks_tasks') || '[]');
+
+    function switchProgTab(type, btn) {
+      activeProgTab = type;
+      document.querySelectorAll('#p-program .sub-tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('progListTitle').innerText = type === 'daily' ? '📌 Günlük Görev Listem' : '🗓️ Haftalık Plan Listem';
+      renderTasks();
+    }
+
+    function getFormattedDate(d) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function addProgramTask() {
+      const type = document.getElementById('progType').value;
+      const name = document.getElementById('progTask').value;
+      const dur = document.getElementById('progDuration').value || 0;
+      const q = document.getElementById('progQuestions').value || 0;
+      const useRep = document.getElementById('progRepeat').checked;
+
+      if(!name) { alert("Lütfen ders veya konu adı girin!"); return; }
+
+      const today = new Date();
+      const todayStr = getFormattedDate(today);
+
+      tasks.push({ id: Date.now() + Math.random(), type, name, dur, q, targetDate: todayStr, isRepeat: false, completed: false });
+
+      if(useRep) {
+        [2, 7, 15, 30, 45].forEach(days => {
+          let target = new Date();
+          target.setDate(today.getDate() + days);
+          tasks.push({ id: Date.now() + Math.random(), type: 'daily', name: `🔄 TEKRAR: ${name}`, dur, q, targetDate: getFormattedDate(target), isRepeat: true, completed: false });
+        });
+      }
+
+      localStorage.setItem('yks_tasks', JSON.stringify(tasks));
+      renderTasks();
+      document.getElementById('progTask').value = '';
+      document.getElementById('progDuration').value = '';
+      document.getElementById('progQuestions').value = '';
+      document.getElementById('progRepeat').checked = false;
+    }
+
+    function toggleTaskComplete(id) {
+      const task = tasks.find(t => t.id === id);
+      if(task) {
+        task.completed = !task.completed;
+        localStorage.setItem('yks_tasks', JSON.stringify(tasks));
+        renderTasks();
+      }
+    }
+
+    function clearTasks() {
+      const todayStr = getFormattedDate(new Date());
+      tasks = tasks.filter(t => {
+        if(t.type !== activeProgTab) return true;
+        if(t.isRepeat && t.targetDate > todayStr) return true;
+        return false;
+      });
+      localStorage.setItem('yks_tasks', JSON.stringify(tasks));
+      renderTasks();
+    }
+
+    function renderTasks() {
+      const todayStr = getFormattedDate(new Date());
+
+      const filtered = tasks.filter(t => {
+        if (activeProgTab === 'daily') {
+          if (t.type === 'daily' && !t.isRepeat) return true;
+          if (t.isRepeat && t.targetDate <= todayStr) return true;
+          return false;
+        } else {
+          return t.type === 'weekly';
+        }
+      });
+
+      document.getElementById('taskList').innerHTML = filtered.length === 0 
+        ? '<div style="font-size:12px; color:var(--text-muted);">Henüz görev eklenmedi.</div>'
+        : filtered.map(t => `
+          <div class="task-item ${t.completed ? 'completed' : ''}">
+            <input type="checkbox" class="task-checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTaskComplete(${t.id})">
+            <div style="flex:1;">
+              <strong>${t.name}</strong>
+              <div style="font-size:11px; color:var(--text-muted);">
+                ${t.dur > 0 ? `Süre: ${t.dur}dk ` : ''} 
+                ${t.q > 0 ? `| Soru: ${t.q} ` : ''} 
+                ${t.isRepeat ? `<span style="color:var(--accent); font-weight:bold;">(Günü Geldi!)</span>` : ''}
+              </div>
+            </div>
+          </div>
+        `).join('');
+    }
+
+    function openSubject(subName) {
+      activeSubject = subName;
+      document.getElementById('sub-selector').style.display = 'none';
+      document.getElementById('sub-detail').style.display = 'block';
+      document.getElementById('activeSubjectTitle').innerText = subName;
+      renderErrors();
+      renderDetails();
+    }
+    function closeSubject() {
+      document.getElementById('sub-selector').style.display = 'block';
+      document.getElementById('sub-detail').style.display = 'none';
+    }
+    function switchSubTab(tabName, btn) {
+      document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('stab-errors').style.display = tabName === 'errors' ? 'block' : 'none';
+      document.getElementById('stab-details').style.display = tabName === 'details' ? 'block' : 'none';
+    }
+
+    let errors = JSON.parse(localStorage.getItem('yks_errors') || '[]');
+    function addErrorPost() {
+      const topic = document.getElementById('errTopic').value;
+      const desc = document.getElementById('errDesc').value;
+      const file = document.getElementById('errFile').files[0];
+      const isPrivate = document.getElementById('errIsPrivate').checked;
+
+      const save = (imgBase64) => {
+        errors.push({ id: Date.now(), sub: activeSubject, topic, desc, img: imgBase64, owner: currentUser, isPrivate, date: new Date().toLocaleDateString('tr-TR') });
+        localStorage.setItem('yks_errors', JSON.stringify(errors));
+        renderErrors();
+        document.getElementById('errDesc').value = '';
+        document.getElementById('errTopic').value = '';
+      };
+
+      if(file) {
+        const r = new FileReader();
+        r.onload = (e) => save(e.target.result);
+        r.readAsDataURL(file);
+      } else { save(null); }
+    }
+
+    function renderErrors() {
+      const filtered = errors.filter(e => e.sub === activeSubject);
+      document.getElementById('errorFeed').innerHTML = filtered.map(e => `
+        <div class="error-post">
+          <div class="error-header">
+            <span>👤 ${e.owner} ${e.isPrivate ? '(🔒 Gizli)' : ''}</span>
+            <span>📌 ${e.topic} | ${e.date}</span>
+          </div>
+          <p style="font-size:13px;">${e.desc}</p>
+          ${e.img ? `<img src="${e.img}" class="error-img">` : ''}
+        </div>
+      `).join('');
+    }
+
+    let details = JSON.parse(localStorage.getItem('yks_details') || '[]');
+    function addSubjectDetail() {
+      const text = document.getElementById('detText').value;
+      if(!text) return;
+      details.push({ sub: activeSubject, text, owner: currentUser });
+      localStorage.setItem('yks_details', JSON.stringify(details));
+      renderDetails();
+      document.getElementById('detText').value = '';
+    }
+    function renderDetails() {
+      document.getElementById('detailsFeed').innerHTML = details.filter(d => d.sub === activeSubject).map(d => `
+        <div style="background:var(--card-inner); border:1px solid var(--border); padding:10px; border-radius:8px; margin-bottom:8px; font-size:13px;">
+          <small style="color:var(--accent)">💡 ${d.owner} paylaştı:</small>
+          <p style="margin-top:4px;">${d.text}</p>
+        </div>
+      `).join('');
+    }
+
+    let trials = JSON.parse(localStorage.getItem('yks_trials') || '[]');
+    function saveTrialAnalysis() {
+      const t = {
+        title: document.getElementById('trialTitle').value,
+        date: document.getElementById('trialDate').value,
+        mood: document.getElementById('trialMood').value,
+        trD: document.getElementById('dyTrD').value || 0,
+        trY: document.getElementById('dyTrY').value || 0,
+        maD: document.getElementById('dyMaD').value || 0,
+        maY: document.getElementById('dyMaY').value || 0,
+        feD: document.getElementById('dyFeD').value || 0,
+        feY: document.getElementById('dyFeY').value || 0,
+        missing: document.getElementById('trialMissing').value
+      };
+      trials.push(t);
+      localStorage.setItem('yks_trials', JSON.stringify(trials));
+      renderTrialHistory();
+    }
+
+    function renderTrialHistory() {
+      document.getElementById('trialHistoryList').innerHTML = trials.map(t => `
+        <div style="background:var(--card-inner); border-left:4px solid var(--primary); padding:10px; margin-bottom:8px; border-radius:6px; font-size:12px;">
+          <strong>${t.title}</strong> (${t.date}) - <span style="color:var(--accent)">${t.mood}</span>
+          <div style="margin:4px 0;">Tr/Sos: ${t.trD}D ${t.trY}Y | Mat: ${t.maD}D ${t.maY}Y | Fen: ${t.feD}D ${t.feY}Y</div>
+          <div style="color:var(--danger)">⚠️ Eksikler: ${t.missing}</div>
+        </div>
+      `).join('');
+    }
+
+    function sendMessage() {
+      const input = document.getElementById('chatInput');
+      if(!input.value) return;
+      const box = document.getElementById('chatBox');
+      box.innerHTML += `<div class="chat-msg"><span class="sender">${currentUser}:</span> ${input.value}</div>`;
+      input.value = '';
+      box.scrollTop = box.scrollHeight;
+    }
   </script>
 </body>
 </html>
