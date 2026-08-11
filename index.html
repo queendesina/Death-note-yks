@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>YKS Death Note - Pro Analiz</title>
+  <title>YKS Death Note - Pro</title>
   <style>
     :root { --primary: #6366f1; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --border: #334155; }
     body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 15px; margin: 0; padding-bottom: 80px; }
@@ -13,62 +13,54 @@
     .nav-bottom { position: fixed; bottom: 0; left: 0; right: 0; background: #0f172a; border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 10px; z-index: 1000; }
     .nav-item { color: #94a3b8; cursor: pointer; font-size: 12px; text-align: center; }
     .nav-item.active { color: #818cf8; }
-    .dy-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 5px; margin-bottom: 5px; align-items: center; }
     input, textarea, select { width: 100%; padding: 8px; margin: 4px 0; background: #0f172a; border: 1px solid var(--border); color: white; border-radius: 6px; }
+    .img-thumb { max-width: 100px; height: auto; border-radius: 4px; margin-top: 5px; }
   </style>
 </head>
 <body>
 
-  <!-- 1. ANALİZ PANELİ (İSTEDİĞİN GİBİ YAPILDI) -->
-  <div id="panel-analysis" class="page-panel active">
-    <h3>📊 Detaylı Deneme Analizi</h3>
+  <!-- 1. HATA ANALİZİ (İSTENEN YAPI) -->
+  <div id="panel-errors" class="page-panel active">
+    <h3>⚠️ Hata Analizi ve Soru Havuzu</h3>
+    
+    <!-- Filtreler -->
     <div class="card">
-      <input type="text" id="tName" placeholder="Deneme Adı (Örn: Özdebir TYT)">
-      <input type="date" id="tDate">
-      <select id="tMood">
-        <option value="⚡ Odaklanmış">⚡ Odaklanmış</option>
-        <option value="😴 Yorgun">😴 Yorgun</option>
-        <option value="😰 Stresli">😰 Stresli</option>
-        <option value="😐 Normal">😐 Normal</option>
-      </select>
-      
-      <div style="margin-top:10px; font-size:13px; color:#94a3b8;">Ders Bazlı D/Y Sayıları:</div>
-      <div class="dy-grid"><span>Ders</span><span>D</span><span>Y</span></div>
-      <div class="dy-grid"><span>Türkçe</span><input type="number" id="trD"> <input type="number" id="trY"></div>
-      <div class="dy-grid"><span>Mat</span><input type="number" id="maD"> <input type="number" id="maY"></div>
-      <div class="dy-grid"><span>Fen</span><input type="number" id="feD"> <input type="number" id="feY"></div>
-      <div class="dy-grid"><span>Sosyal</span><input type="number" id="soD"> <input type="number" id="soY"></div>
-      <div class="dy-grid"><span>Geo</span><input type="number" id="geD"> <input type="number" id="geY"></div>
-
-      <textarea id="tMissing" placeholder="Eksik konular..."></textarea>
-      <textarea id="tNotes" placeholder="Deneme sonrası notların..."></textarea>
-      <button class="btn" onclick="saveTrial()">Analizi Kaydet</button>
+        <select id="filterSubject" onchange="renderErrors()">
+            <option value="Hepsi">Tüm Dersler</option>
+            <option value="Türkçe">Türkçe</option>
+            <option value="Matematik">Matematik</option>
+            <option value="Fizik">Fizik</option>
+            <option value="Kimya">Kimya</option>
+            <option value="Biyoloji">Biyoloji</option>
+            <option value="Geometri">Geometri</option>
+            <option value="Sosyal">Sosyal</option>
+        </select>
+        <select id="filterType" onchange="renderErrors()">
+            <option value="Benim">Sadece Benim Hatalarım</option>
+            <option value="Toplu">Toplu Hata Havuzu</option>
+        </select>
     </div>
-    <div id="trialHistory"></div>
+
+    <!-- Hata Ekle Formu -->
+    <div class="card">
+        <input type="text" id="errDesc" placeholder="Soru/Hata Açıklaması">
+        <select id="errSub">
+            <option value="Türkçe">Türkçe</option> <option value="Matematik">Matematik</option>
+            <option value="Biyoloji">Biyoloji</option> <option value="Fizik">Fizik</option>
+            <option value="Kimya">Kimya</option> <option value="Geometri">Geometri</option>
+        </select>
+        <select id="errOwner"><option value="Benim">Benim Hatam</option><option value="Toplu">Toplu Havuz</option></select>
+        <input type="file" id="errPhoto" accept="image/*">
+        <button class="btn" onclick="addError()">Hatayı Kaydet</button>
+    </div>
+
+    <div id="errorList"></div>
   </div>
 
-  <!-- 2. DERSLER (TYT/AYT/GEO) -->
-  <div id="panel-subjects" class="page-panel">
-    <h3>📚 Dersler</h3>
-    <div class="card">
-        <h4>TYT</h4>
-        <button class="btn" onclick="alert('Türkçe Detayları Açıldı')">Türkçe</button>
-        <button class="btn" onclick="alert('Matematik Detayları Açıldı')">Matematik</button>
-        <button class="btn" onclick="alert('Fen Detayları Açıldı')">Fen</button>
-        <button class="btn" onclick="alert('Sosyal Detayları Açıldı')">Sosyal</button>
-    </div>
-    <div class="card">
-        <h4>AYT & Geo</h4>
-        <button class="btn" onclick="alert('Sayısal Dersler')">Sayısal (Mat/Fiz/Kim/Biyo)</button>
-        <button class="btn" onclick="alert('Geometri')">Geometri</button>
-    </div>
-  </div>
-
-  <!-- NAV -->
+  <!-- 2. NAVİGASYON -->
   <div class="nav-bottom">
-    <div class="nav-item active" onclick="showPanel('analysis', this)">📊<br>Analiz</div>
-    <div class="nav-item" onclick="showPanel('subjects', this)">📚<br>Dersler</div>
-    <div class="nav-item" onclick="showPanel('program', this)">📅<br>Program</div>
+    <div class="nav-item active" onclick="showPanel('errors', this)">⚠️<br>Hatalar</div>
+    <div class="nav-item" onclick="showPanel('analytics', this)">📊<br>Deneme</div>
   </div>
 
   <script>
@@ -79,39 +71,54 @@
       el.classList.add('active');
     }
 
-    // --- DENEME ANALİZ KAYIT SİSTEMİ ---
-    function saveTrial() {
-        const data = {
-            name: document.getElementById('tName').value,
-            date: document.getElementById('tDate').value,
-            mood: document.getElementById('tMood').value,
-            tr: {d: document.getElementById('trD').value, y: document.getElementById('trY').value},
-            ma: {d: document.getElementById('maD').value, y: document.getElementById('maY').value},
-            missing: document.getElementById('tMissing').value,
-            notes: document.getElementById('tNotes').value
-        };
+    // --- HATA HAVUZU MANTIĞI ---
+    let errors = JSON.parse(localStorage.getItem('my_errors') || '[]');
+
+    function addError() {
+        const fileInput = document.getElementById('errPhoto');
+        const file = fileInput.files[0];
         
-        let history = JSON.parse(localStorage.getItem('trials') || '[]');
-        history.unshift(data);
-        localStorage.setItem('trials', JSON.stringify(history));
-        renderTrials();
-        alert("Deneme analizi kaydedildi!");
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                saveData(e.target.result);
+            };
+            reader.readAsDataURL(file);
+        } else {
+            saveData(null);
+        }
     }
 
-    function renderTrials() {
-        const h = JSON.parse(localStorage.getItem('trials') || '[]');
-        document.getElementById('trialHistory').innerHTML = h.map(t => `
-            <div class="card" style="border-left:4px solid #818cf8;">
-                <div style="display:flex; justify-content:space-between;"><strong>${t.name}</strong> <span>${t.date}</span></div>
-                <div style="font-size:12px; color:#94a3b8; margin:5px 0;">Ruh Hali: ${t.mood}</div>
-                <div style="font-size:13px;">Tr: ${t.tr.d}D ${t.tr.y}Y | Mat: ${t.ma.d}D ${t.ma.y}Y</div>
-                <div style="margin-top:8px; font-size:12px; color:#ef4444;">⚠️ Eksik: ${t.missing}</div>
-                <div style="margin-top:5px; font-size:12px; font-style:italic;">"${t.notes}"</div>
+    function saveData(imgData) {
+        const err = {
+            desc: document.getElementById('errDesc').value,
+            sub: document.getElementById('errSub').value,
+            type: document.getElementById('errOwner').value,
+            img: imgData
+        };
+        errors.push(err);
+        localStorage.setItem('my_errors', JSON.stringify(errors));
+        renderErrors();
+        alert("Başarıyla eklendi.");
+    }
+
+    function renderErrors() {
+        const subFilter = document.getElementById('filterSubject').value;
+        const typeFilter = document.getElementById('filterType').value;
+        
+        const list = document.getElementById('errorList');
+        list.innerHTML = errors.filter(e => 
+            (subFilter === "Hepsi" || e.sub === subFilter) && 
+            (e.type === typeFilter)
+        ).map(e => `
+            <div class="card">
+                <strong>[${e.sub}]</strong> ${e.desc}
+                ${e.img ? `<br><img src="${e.img}" class="img-thumb">` : ''}
             </div>
         `).join('');
     }
-    
-    renderTrials();
+
+    renderErrors();
   </script>
 </body>
 </html>
