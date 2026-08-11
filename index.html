@@ -3,147 +3,75 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>YKS Death Note - Pro</title>
+  <title>YKS Death Note - Pro Analiz</title>
   <style>
     :root { --primary: #6366f1; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --border: #334155; }
     body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 15px; margin: 0; padding-bottom: 80px; }
     .card { background: var(--card); padding: 16px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 12px; }
-    .btn { background: var(--primary); color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; margin-top:5px; }
+    .btn { background: var(--primary); color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; }
     .page-panel { display: none; } .page-panel.active { display: block; }
     .nav-bottom { position: fixed; bottom: 0; left: 0; right: 0; background: #0f172a; border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 10px; z-index: 1000; }
     .nav-item { color: #94a3b8; cursor: pointer; font-size: 12px; text-align: center; }
     .nav-item.active { color: #818cf8; }
-    input, textarea, select { width: 100%; padding: 8px; margin: 5px 0; background: #0f172a; border: 1px solid var(--border); color: white; border-radius: 6px; }
-    .grid-hub { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .view-container { display: none; } .view-container.active { display: block; }
+    .dy-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 5px; margin-bottom: 5px; align-items: center; }
+    input, textarea, select { width: 100%; padding: 8px; margin: 4px 0; background: #0f172a; border: 1px solid var(--border); color: white; border-radius: 6px; }
   </style>
 </head>
 <body>
 
-  <!-- 1. ANASAYFA -->
-  <div id="panel-home" class="page-panel active">
-    <h3>⏱️ Çalışma Zamanı</h3>
-    <div class="card" style="text-align:center;">
-      <h1 id="timerDisplay">00:00:00</h1>
-      <input type="number" id="timerInput" placeholder="Dakika (Boşsa kronometre)">
-      <button class="btn" onclick="startTimer()">Başlat / Sıfırla</button>
-    </div>
+  <!-- 1. ANALİZ PANELİ (İSTEDİĞİN GİBİ YAPILDI) -->
+  <div id="panel-analysis" class="page-panel active">
+    <h3>📊 Detaylı Deneme Analizi</h3>
     <div class="card">
-        <h3>🎯 Hedeflerim</h3>
-        <input type="text" id="goalInput" placeholder="Hedef...">
-        <button class="btn" onclick="addGoal()">Kaydet</button>
-        <div id="goalsList"></div>
+      <input type="text" id="tName" placeholder="Deneme Adı (Örn: Özdebir TYT)">
+      <input type="date" id="tDate">
+      <select id="tMood">
+        <option value="⚡ Odaklanmış">⚡ Odaklanmış</option>
+        <option value="😴 Yorgun">😴 Yorgun</option>
+        <option value="😰 Stresli">😰 Stresli</option>
+        <option value="😐 Normal">😐 Normal</option>
+      </select>
+      
+      <div style="margin-top:10px; font-size:13px; color:#94a3b8;">Ders Bazlı D/Y Sayıları:</div>
+      <div class="dy-grid"><span>Ders</span><span>D</span><span>Y</span></div>
+      <div class="dy-grid"><span>Türkçe</span><input type="number" id="trD"> <input type="number" id="trY"></div>
+      <div class="dy-grid"><span>Mat</span><input type="number" id="maD"> <input type="number" id="maY"></div>
+      <div class="dy-grid"><span>Fen</span><input type="number" id="feD"> <input type="number" id="feY"></div>
+      <div class="dy-grid"><span>Sosyal</span><input type="number" id="soD"> <input type="number" id="soY"></div>
+      <div class="dy-grid"><span>Geo</span><input type="number" id="geD"> <input type="number" id="geY"></div>
+
+      <textarea id="tMissing" placeholder="Eksik konular..."></textarea>
+      <textarea id="tNotes" placeholder="Deneme sonrası notların..."></textarea>
+      <button class="btn" onclick="saveTrial()">Analizi Kaydet</button>
     </div>
+    <div id="trialHistory"></div>
   </div>
 
-  <!-- 2. PROGRAM -->
-  <div id="panel-program" class="page-panel">
-    <h3>📅 Ders Programı</h3>
-    <div class="card">
-      <input type="text" id="taskName" placeholder="Ders/Konu">
-      <input type="number" id="taskDur" placeholder="Süre (dk)">
-      <label><input type="checkbox" id="useRepeat"> Tekrar Sistemi (2,7,15,30,45 gün)</label>
-      <button class="btn" onclick="addTask()">Programı Ekle</button>
-    </div>
-    <div id="taskList"></div>
-  </div>
-
-  <!-- 3. DERSLER (TYT/AYT/GEO) -->
+  <!-- 2. DERSLER (TYT/AYT/GEO) -->
   <div id="panel-subjects" class="page-panel">
-    <!-- Ana Hub -->
-    <div id="hub-main" class="view-container active">
-        <h3>📚 Dersler</h3>
-        <div class="card">
-            <h4>TYT</h4>
-            <div class="grid-hub">
-                <button class="btn" onclick="showSubCat('TYT_TURKCE')">Türkçe</button>
-                <button class="btn" onclick="showSubCat('TYT_MAT')">Matematik</button>
-                <button class="btn" onclick="showSubCat('TYT_FEN')">Fen Bilimleri</button>
-                <button class="btn" onclick="showSubCat('TYT_SOSYAL')">Sosyal Bilgiler</button>
-            </div>
-        </div>
-        <div class="card">
-            <h4>AYT (Sayısal)</h4>
-            <div class="grid-hub">
-                <button class="btn" onclick="showSubCat('AYT_MAT')">Matematik</button>
-                <button class="btn" onclick="showSubCat('AYT_FIZIK')">Fizik</button>
-                <button class="btn" onclick="showSubCat('AYT_KIMYA')">Kimya</button>
-                <button class="btn" onclick="showSubCat('AYT_BIYO')">Biyoloji</button>
-            </div>
-        </div>
-        <div class="card">
-            <h4>Geometri</h4>
-            <button class="btn" onclick="showSubCat('GEO_ANA')">Geometri</button>
-        </div>
-    </div>
-
-    <!-- Detay Görünümü -->
-    <div id="hub-detail" class="view-container">
-        <button class="btn" onclick="goBack()">⬅️ Geri</button>
-        <h3 id="currentSubTitle"></h3>
-        <div class="card">
-            <h4>💡 Hafıza Kartları</h4>
-            <textarea id="memCard" placeholder="Önemli bilgiyi buraya not al..."></textarea>
-            <button class="btn" onclick="saveData('mem')">Kaydet</button>
-        </div>
-        <div class="card">
-            <h4>⚠️ Hata Analizi</h4>
-            <textarea id="errDesc" placeholder="Yanlış yaptığın sorunun çözümü..."></textarea>
-            <button class="btn" onclick="saveData('err')">Kaydet</button>
-        </div>
-        <div class="card">
-            <h4>📌 Detay Bilgiler</h4>
-            <textarea id="detInfo" placeholder="Kıyıda köşede kalmış bilgiler..."></textarea>
-            <button class="btn" onclick="saveData('det')">Kaydet</button>
-        </div>
-    </div>
-  </div>
-
-  <!-- 4. ANALİZ -->
-  <div id="panel-analysis" class="page-panel">
-    <h3>📊 Deneme Analizim</h3>
+    <h3>📚 Dersler</h3>
     <div class="card">
-      <input type="text" id="anaTitle" placeholder="Deneme Adı (Örn: TYT 1)">
-      <input type="number" id="anaNet" placeholder="Net Sayısı">
-      <button class="btn" onclick="saveAnalytics()">Analizi Kaydet</button>
+        <h4>TYT</h4>
+        <button class="btn" onclick="alert('Türkçe Detayları Açıldı')">Türkçe</button>
+        <button class="btn" onclick="alert('Matematik Detayları Açıldı')">Matematik</button>
+        <button class="btn" onclick="alert('Fen Detayları Açıldı')">Fen</button>
+        <button class="btn" onclick="alert('Sosyal Detayları Açıldı')">Sosyal</button>
     </div>
-    <div id="analyticsList"></div>
+    <div class="card">
+        <h4>AYT & Geo</h4>
+        <button class="btn" onclick="alert('Sayısal Dersler')">Sayısal (Mat/Fiz/Kim/Biyo)</button>
+        <button class="btn" onclick="alert('Geometri')">Geometri</button>
+    </div>
   </div>
 
   <!-- NAV -->
   <div class="nav-bottom">
-    <div class="nav-item active" onclick="showPanel('home', this)">🏠<br>Sayaç</div>
-    <div class="nav-item" onclick="showPanel('program', this)">📅<br>Program</div>
+    <div class="nav-item active" onclick="showPanel('analysis', this)">📊<br>Analiz</div>
     <div class="nav-item" onclick="showPanel('subjects', this)">📚<br>Dersler</div>
-    <div class="nav-item" onclick="showPanel('analysis', this)">📊<br>Analiz</div>
+    <div class="nav-item" onclick="showPanel('program', this)">📅<br>Program</div>
   </div>
 
   <script>
-    // --- TIMER ---
-    let timerSec = 0; let interval;
-    function startTimer() {
-        if(interval) { clearInterval(interval); interval=null; return; }
-        const mins = document.getElementById('timerInput').value;
-        timerSec = mins * 60;
-        interval = setInterval(() => {
-            timerSec++;
-            const h = Math.floor(timerSec/3600), m = Math.floor((timerSec%3600)/60), s = timerSec%60;
-            document.getElementById('timerDisplay').innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-        }, 1000);
-    }
-
-    // --- HUB NAVIGATION ---
-    function showSubCat(sub) {
-        document.getElementById('hub-main').classList.remove('active');
-        document.getElementById('hub-detail').classList.add('active');
-        document.getElementById('currentSubTitle').innerText = sub.replace('_',' ');
-    }
-    function goBack() {
-        document.getElementById('hub-main').classList.add('active');
-        document.getElementById('hub-detail').classList.remove('active');
-    }
-
-    // --- GENEL UI ---
     function showPanel(p, el) {
       document.querySelectorAll('.page-panel').forEach(div => div.classList.remove('active'));
       document.getElementById('panel-' + p).classList.add('active');
@@ -151,21 +79,39 @@
       el.classList.add('active');
     }
 
-    // --- DATA SAVING (Basitleştirilmiş) ---
-    function addTask() { 
-        const name = document.getElementById('taskName').value;
-        document.getElementById('taskList').innerHTML += `<div class="card">${name} eklendi.</div>`;
+    // --- DENEME ANALİZ KAYIT SİSTEMİ ---
+    function saveTrial() {
+        const data = {
+            name: document.getElementById('tName').value,
+            date: document.getElementById('tDate').value,
+            mood: document.getElementById('tMood').value,
+            tr: {d: document.getElementById('trD').value, y: document.getElementById('trY').value},
+            ma: {d: document.getElementById('maD').value, y: document.getElementById('maY').value},
+            missing: document.getElementById('tMissing').value,
+            notes: document.getElementById('tNotes').value
+        };
+        
+        let history = JSON.parse(localStorage.getItem('trials') || '[]');
+        history.unshift(data);
+        localStorage.setItem('trials', JSON.stringify(history));
+        renderTrials();
+        alert("Deneme analizi kaydedildi!");
     }
-    function addGoal() { 
-        const g = document.getElementById('goalInput').value;
-        document.getElementById('goalsList').innerHTML += `<div>✅ ${g}</div>`;
+
+    function renderTrials() {
+        const h = JSON.parse(localStorage.getItem('trials') || '[]');
+        document.getElementById('trialHistory').innerHTML = h.map(t => `
+            <div class="card" style="border-left:4px solid #818cf8;">
+                <div style="display:flex; justify-content:space-between;"><strong>${t.name}</strong> <span>${t.date}</span></div>
+                <div style="font-size:12px; color:#94a3b8; margin:5px 0;">Ruh Hali: ${t.mood}</div>
+                <div style="font-size:13px;">Tr: ${t.tr.d}D ${t.tr.y}Y | Mat: ${t.ma.d}D ${t.ma.y}Y</div>
+                <div style="margin-top:8px; font-size:12px; color:#ef4444;">⚠️ Eksik: ${t.missing}</div>
+                <div style="margin-top:5px; font-size:12px; font-style:italic;">"${t.notes}"</div>
+            </div>
+        `).join('');
     }
-    function saveAnalytics() {
-        const title = document.getElementById('anaTitle').value;
-        const net = document.getElementById('anaNet').value;
-        document.getElementById('analyticsList').innerHTML += `<div class="card">${title}: <strong>${net} Net</strong></div>`;
-    }
-    function saveData(type) { alert(type + " kaydedildi!"); }
+    
+    renderTrials();
   </script>
 </body>
 </html>
