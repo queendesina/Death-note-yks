@@ -25,6 +25,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
     body { background: var(--bg); color: var(--text); padding-bottom: 75px; }
 
+    /* GİRİŞ EKRANI */
     #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
     #login-box { background: var(--card); border: 1px solid var(--border); padding: 25px; border-radius: 12px; width: 100%; max-width: 360px; text-align: center; }
 
@@ -47,15 +48,26 @@
     .btn { background: var(--primary); color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; text-align: center; font-size: 14px; }
     .btn:hover { background: var(--primary-hover); }
     .btn-secondary { background: var(--card-inner); border: 1px solid var(--border); }
+    .btn-group { display: flex; gap: 8px; }
 
     .tdk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-top: 10px; }
     .tdk-card { background: var(--card-inner); padding: 10px; border-radius: 8px; border: 1px solid var(--border); }
     .tdk-word { font-weight: bold; color: var(--accent); font-size: 14px; }
     .tdk-meaning { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
 
+    .subject-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .subject-btn { background: var(--card-inner); border: 1px solid var(--border); padding: 15px; border-radius: 10px; color: white; font-weight: bold; text-align: left; cursor: pointer; }
     .sub-tabs { display: flex; gap: 5px; margin-bottom: 15px; background: var(--card-inner); padding: 5px; border-radius: 8px; }
     .sub-tab-btn { flex: 1; background: none; border: none; color: var(--text-muted); padding: 8px; border-radius: 6px; cursor: pointer; font-size: 12px; }
     .sub-tab-btn.active { background: var(--primary); color: white; }
+
+    .task-item { background: var(--card-inner); padding: 10px; border-radius: 8px; margin-bottom: 6px; font-size: 13px; display: flex; align-items: center; gap: 10px; border: 1px solid var(--border); transition: all 0.2s; }
+    .task-item.completed { opacity: 0.5; text-decoration: line-through; }
+    .task-checkbox { width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent); margin: 0; }
+
+    .error-post { background: var(--card-inner); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 10px; }
+    .error-header { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+    .error-img { width: 100%; max-height: 250px; object-fit: contain; border-radius: 6px; margin: 8px 0; background: #000; }
 
     .dy-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
     .dy-table td, .dy-table th { padding: 6px; font-size: 12px; text-align: center; }
@@ -72,7 +84,7 @@
   <div id="login-overlay">
     <div id="login-box">
       <h2 style="color: var(--primary); margin-bottom: 10px;">YKS DeathNote</h2>
-      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">Kullanıcı adını girerek başla:</p>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">Kullanıcı adını girerek giriş yap:</p>
       <input type="text" id="usernameInput" placeholder="Kullanıcı Adı">
       <button class="btn" onclick="login()">Giriş Yap</button>
     </div>
@@ -85,15 +97,127 @@
 
   <div class="container">
 
-    <!-- 1. ANASAYFA / TDK -->
+    <!-- 1. ANASAYFA / KRONOMETRE / TDK -->
     <div id="p-home" class="panel active">
       <div class="card">
-        <div class="card-title">📖 TDK Günün Kelimeleri</div>
+        <div class="card-title">📖 TDK Günün 10 Kelimesi</div>
         <div class="tdk-grid" id="tdkContainer"></div>
+      </div>
+
+      <div class="card" style="text-align: center;">
+        <div class="card-title" style="justify-content: center;">⏱️ Çalışma Takibi</div>
+        <h1 id="timerDisplay" style="font-size: 42px; margin: 15px 0; font-family: monospace;">00:00:00</h1>
+        <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+          <input type="number" id="timerInput" placeholder="Geri sayım için dakika (İsteğe Bağlı)">
+        </div>
+        <div class="btn-group">
+          <button class="btn" onclick="toggleTimer()">Başlat / Durdur</button>
+          <button class="btn btn-secondary" onclick="resetTimer()">Sıfırla</button>
+        </div>
       </div>
     </div>
 
-    <!-- 2. DENEME ANALİZİ (AYRI TYT / AYT) -->
+    <!-- 2. PROGRAM & GÜNLÜK/HAFTALIK PLAN -->
+    <div id="p-program" class="panel">
+      <div class="card">
+        <div class="card-title">📅 Ders Programı Ekle</div>
+        
+        <select id="progType">
+          <option value="daily">📌 Günlük Görev</option>
+          <option value="weekly">🗓️ Haftalık Hedef</option>
+        </select>
+
+        <input type="text" id="progTask" placeholder="Ders / Konu Adı">
+        <div style="display: flex; gap: 10px;">
+          <input type="number" id="progDuration" placeholder="Süre (dk)">
+          <input type="number" id="progQuestions" placeholder="Soru Sayısı">
+        </div>
+
+        <label style="font-size: 12px; display: flex; align-items: center; gap: 8px; margin-bottom: 12px; cursor: pointer;">
+          <input type="checkbox" id="progRepeat" style="width: auto; margin: 0;"> 
+          Aralıklı Tekrar Sistemini Uygula (2, 7, 15, 30, 45 gün sonra günü gelince hatırlatılır)
+        </label>
+        <button class="btn" onclick="addProgramTask()">Programıma Ekle</button>
+      </div>
+
+      <div class="sub-tabs">
+        <button class="sub-tab-btn active" onclick="switchProgTab('daily', this)">📌 Günlük Görevler</button>
+        <button class="sub-tab-btn" onclick="switchProgTab('weekly', this)">🗓️ Haftalık Plan</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="display:flex; justify-content:space-between; align-items:center;">
+          <span id="progListTitle">📌 Günlük Görev Listem</span>
+          <button onclick="clearTasks()" style="background:var(--danger); color:white; border:none; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer;">Listeyi Temizle</button>
+        </div>
+        <div id="taskList"></div>
+      </div>
+    </div>
+
+    <!-- 3. DERSLER HUB -->
+    <div id="p-subjects" class="panel">
+      <div id="sub-selector">
+        <div class="card">
+          <div class="card-title">📘 TYT Dersleri</div>
+          <div class="subject-grid">
+            <button class="subject-btn" onclick="openSubject('TYT Türkçe')">Türkçe</button>
+            <button class="subject-btn" onclick="openSubject('TYT Matematik')">Matematik</button>
+            <button class="subject-btn" onclick="openSubject('TYT Geometri')">Geometri</button>
+            <button class="subject-btn" onclick="openSubject('TYT Fizik')">Fizik</button>
+            <button class="subject-btn" onclick="openSubject('TYT Kimya')">Kimya</button>
+            <button class="subject-btn" onclick="openSubject('TYT Biyoloji')">Biyoloji</button>
+            <button class="subject-btn" onclick="openSubject('TYT Sosyal')" style="grid-column: span 2;">Sosyal Bilimler</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">📙 AYT Dersleri (Sayısal)</div>
+          <div class="subject-grid">
+            <button class="subject-btn" onclick="openSubject('AYT Matematik')">Matematik</button>
+            <button class="subject-btn" onclick="openSubject('AYT Geometri')">Geometri</button>
+            <button class="subject-btn" onclick="openSubject('AYT Fizik')">Fizik</button>
+            <button class="subject-btn" onclick="openSubject('AYT Kimya')">Kimya</button>
+            <button class="subject-btn" onclick="openSubject('AYT Biyoloji')">Biyoloji</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="sub-detail" style="display: none;">
+        <button class="btn btn-secondary" style="margin-bottom: 12px; width: auto;" onclick="closeSubject()">⬅️ Derslere Dön</button>
+        <h2 id="activeSubjectTitle" style="margin-bottom: 12px;">Ders</h2>
+
+        <div class="sub-tabs">
+          <button class="sub-tab-btn active" onclick="switchSubTab('errors', this)">⚠️ Hata Analiz</button>
+          <button class="sub-tab-btn" onclick="switchSubTab('details', this)">💡 Detay Bilgiler</button>
+        </div>
+
+        <div id="stab-errors">
+          <div class="card">
+            <div class="card-title">Soru / Hata Ekle</div>
+            <input type="text" id="errTopic" placeholder="Konu (Örn: Hücre Solunumu)">
+            <textarea id="errDesc" placeholder="Yanlış yaptığın sorunun açıklamasını yaz..."></textarea>
+            <input type="file" id="errFile" accept="image/*">
+            <label style="font-size: 12px; display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+              <input type="checkbox" id="errIsPrivate" style="width: auto; margin:0;"> Sadece ben göreyim (Gizli)
+            </label>
+            <button class="btn" onclick="addErrorPost()">Hata Havuzuna Gönder</button>
+          </div>
+
+          <div id="errorFeed"></div>
+        </div>
+
+        <div id="stab-details" style="display: none;">
+          <div class="card">
+            <div class="card-title">Kıyıda Köşede Kalmış Bilgi Paylaş</div>
+            <textarea id="detText" placeholder="Detay bir bilgi yaz..."></textarea>
+            <button class="btn" onclick="addSubjectDetail()">Detay Bilgiyi Ekle</button>
+          </div>
+          <div id="detailsFeed"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. DENEME ANALİZİ (TAM DERS BAZLI AYRI TYT / AYT) -->
     <div id="p-analysis" class="panel">
       <div class="sub-tabs">
         <button class="sub-tab-btn active" onclick="switchTrialTab('tyt', this)">📘 TYT Deneme Takibi</button>
@@ -146,13 +270,13 @@
       </div>
     </div>
 
-    <!-- 3. CANLI SOHBET (FIREBASE ORTAK) -->
+    <!-- 5. MESAJLAŞMA (FIREBASE SOHBET) -->
     <div id="p-chat" class="panel">
       <div class="card">
-        <div class="card-title">💬 Canlı Ortak Sohbet</div>
+        <div class="card-title">💬 Ortak Canlı Sohbet</div>
         <div class="chat-box" id="chatBox"></div>
         <div style="display: flex; gap: 8px;">
-          <input type="text" id="chatInput" placeholder="Mesaj yaz..." style="margin:0;">
+          <input type="text" id="chatInput" placeholder="Mesajınızı yazın..." style="margin:0;">
           <button class="btn" style="width: auto;" onclick="sendMessage()">Gönder</button>
         </div>
       </div>
@@ -160,15 +284,18 @@
 
   </div>
 
+  <!-- ALT NAVİGASYON MENÜSÜ -->
   <div class="nav-bottom">
-    <button class="nav-btn active" onclick="switchPanel('home', this)">🏠<span>Anasayfa</span></button>
-    <button class="nav-btn" onclick="switchPanel('analysis', this)">📊<span>Deneme Takip</span></button>
+    <button class="nav-btn active" onclick="switchPanel('home', this)">🏠<span>Sayaç/TDK</span></button>
+    <button class="nav-btn" onclick="switchPanel('program', this)">📅<span>Program</span></button>
+    <button class="nav-btn" onclick="switchPanel('subjects', this)">📚<span>Dersler</span></button>
+    <button class="nav-btn" onclick="switchPanel('analysis', this)">📊<span>Deneme</span></button>
     <button class="nav-btn" onclick="switchPanel('chat', this)">💬<span>Sohbet</span></button>
   </div>
 
   <script>
     // --- FIREBASE AYARLARI ---
-    // FIREBASE KODUNU AŞAĞIDAKİ PARANTEZLERİN İÇİNE YAPIŞTIR:
+    // FIREBASE EKRANINDAKİ KODUNU AŞAĞIDAKİ PARANTEZİN İÇİNE YAPIŞTIR:
     const firebaseConfig = {
       // apiKey: "...",
       // authDomain: "...",
@@ -179,13 +306,14 @@
       // appId: "..."
     };
 
-    // Firebase'i Başlat
     if (firebaseConfig.apiKey) {
       firebase.initializeApp(firebaseConfig);
     }
     const db = firebase.apps.length ? firebase.database() : null;
 
     let currentUser = "";
+    let activeSubject = "";
+    let activeProgTab = "daily";
 
     function login() {
       const name = document.getElementById('usernameInput').value.trim();
@@ -212,6 +340,7 @@
         document.getElementById('currentUserDisplay').innerText = '👤 ' + savedUser;
       }
       initTDK();
+      renderTasks();
       listenChat();
       listenTrials();
     };
@@ -223,6 +352,229 @@
       btn.classList.add('active');
     }
 
+    // TDK
+    const tdkWords = [
+      { w: "Müteakip", m: "Sonradan gelen, ardından" },
+      { w: "Girift", m: "Birbirine karışmış, karmaşık" },
+      { w: "Süreğen", m: "Sürüp giden, kronik" },
+      { w: "İlliyet", m: "Neden-sonuç bağı" },
+      { w: "Ketum", m: "Sır saklayan" },
+      { w: "Salık vermek", m: "Tavsiye etmek" },
+      { w: "Nispeten", m: "Göreceli olarak" },
+      { w: "Aplikasyon", m: "Uygulama, pratik" },
+      { w: "Liyakat", m: "Uygunluk, yetenek" },
+      { w: "Muhtelif", m: "Çeşitli, çeşitli türden" }
+    ];
+    function initTDK() {
+      document.getElementById('tdkContainer').innerHTML = tdkWords.map(item => `
+        <div class="tdk-card">
+          <div class="tdk-word">${item.w}</div>
+          <div class="tdk-meaning">${item.m}</div>
+        </div>
+      `).join('');
+    }
+
+    // SAYAÇ
+    let timerInt; let seconds = 0; let isRunning = false;
+    function toggleTimer() {
+      if(isRunning) {
+        clearInterval(timerInt);
+        isRunning = false;
+      } else {
+        const inpMins = document.getElementById('timerInput').value;
+        if(inpMins && seconds === 0) seconds = inpMins * 60;
+        
+        timerInt = setInterval(() => {
+          if(inpMins) {
+            seconds--;
+            if(seconds <= 0) { clearInterval(timerInt); alert("Süre Doldu!"); isRunning = false; }
+          } else {
+            seconds++;
+          }
+          updateTimerDisplay();
+        }, 1000);
+        isRunning = true;
+      }
+    }
+    function resetTimer() { clearInterval(timerInt); isRunning = false; seconds = 0; updateTimerDisplay(); }
+    function updateTimerDisplay() {
+      const h = Math.floor(Math.abs(seconds)/3600), m = Math.floor((Math.abs(seconds)%3600)/60), s = Math.abs(seconds)%60;
+      document.getElementById('timerDisplay').innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    }
+
+    // PROGRAM VE GÖREV LİSTESİ
+    let tasks = JSON.parse(localStorage.getItem('yks_tasks') || '[]');
+
+    function switchProgTab(type, btn) {
+      activeProgTab = type;
+      document.querySelectorAll('#p-program .sub-tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('progListTitle').innerText = type === 'daily' ? '📌 Günlük Görev Listem' : '🗓️ Haftalık Plan Listem';
+      renderTasks();
+    }
+
+    function getFormattedDate(d) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function addProgramTask() {
+      const type = document.getElementById('progType').value;
+      const name = document.getElementById('progTask').value;
+      const dur = document.getElementById('progDuration').value || 0;
+      const q = document.getElementById('progQuestions').value || 0;
+      const useRep = document.getElementById('progRepeat').checked;
+
+      if(!name) { alert("Lütfen ders veya konu adı girin!"); return; }
+
+      const today = new Date();
+      const todayStr = getFormattedDate(today);
+
+      tasks.push({ id: Date.now() + Math.random(), type, name, dur, q, targetDate: todayStr, isRepeat: false, completed: false });
+
+      if(useRep) {
+        [2, 7, 15, 30, 45].forEach(days => {
+          let target = new Date();
+          target.setDate(today.getDate() + days);
+          tasks.push({ id: Date.now() + Math.random(), type: 'daily', name: `🔄 TEKRAR: ${name}`, dur, q, targetDate: getFormattedDate(target), isRepeat: true, completed: false });
+        });
+      }
+
+      localStorage.setItem('yks_tasks', JSON.stringify(tasks));
+      renderTasks();
+      document.getElementById('progTask').value = '';
+      document.getElementById('progDuration').value = '';
+      document.getElementById('progQuestions').value = '';
+      document.getElementById('progRepeat').checked = false;
+    }
+
+    function toggleTaskComplete(id) {
+      const task = tasks.find(t => t.id === id);
+      if(task) {
+        task.completed = !task.completed;
+        localStorage.setItem('yks_tasks', JSON.stringify(tasks));
+        renderTasks();
+      }
+    }
+
+    function clearTasks() {
+      const todayStr = getFormattedDate(new Date());
+      tasks = tasks.filter(t => {
+        if(t.type !== activeProgTab) return true;
+        if(t.isRepeat && t.targetDate > todayStr) return true;
+        return false;
+      });
+      localStorage.setItem('yks_tasks', JSON.stringify(tasks));
+      renderTasks();
+    }
+
+    function renderTasks() {
+      const todayStr = getFormattedDate(new Date());
+
+      const filtered = tasks.filter(t => {
+        if (activeProgTab === 'daily') {
+          if (t.type === 'daily' && !t.isRepeat) return true;
+          if (t.isRepeat && t.targetDate <= todayStr) return true;
+          return false;
+        } else {
+          return t.type === 'weekly';
+        }
+      });
+
+      document.getElementById('taskList').innerHTML = filtered.length === 0 
+        ? '<div style="font-size:12px; color:var(--text-muted);">Henüz görev eklenmedi.</div>'
+        : filtered.map(t => `
+          <div class="task-item ${t.completed ? 'completed' : ''}">
+            <input type="checkbox" class="task-checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTaskComplete(${t.id})">
+            <div style="flex:1;">
+              <strong>${t.name}</strong>
+              <div style="font-size:11px; color:var(--text-muted);">
+                ${t.dur > 0 ? `Süre: ${t.dur}dk ` : ''} 
+                ${t.q > 0 ? `| Soru: ${t.q} ` : ''} 
+                ${t.isRepeat ? `<span style="color:var(--accent); font-weight:bold;">(Günü Geldi!)</span>` : ''}
+              </div>
+            </div>
+          </div>
+        `).join('');
+    }
+
+    // DERSLER HUB
+    function openSubject(subName) {
+      activeSubject = subName;
+      document.getElementById('sub-selector').style.display = 'none';
+      document.getElementById('sub-detail').style.display = 'block';
+      document.getElementById('activeSubjectTitle').innerText = subName;
+      renderErrors();
+      renderDetails();
+    }
+    function closeSubject() {
+      document.getElementById('sub-selector').style.display = 'block';
+      document.getElementById('sub-detail').style.display = 'none';
+    }
+    function switchSubTab(tabName, btn) {
+      document.querySelectorAll('#p-subjects .sub-tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('stab-errors').style.display = tabName === 'errors' ? 'block' : 'none';
+      document.getElementById('stab-details').style.display = tabName === 'details' ? 'block' : 'none';
+    }
+
+    let errors = JSON.parse(localStorage.getItem('yks_errors') || '[]');
+    function addErrorPost() {
+      const topic = document.getElementById('errTopic').value;
+      const desc = document.getElementById('errDesc').value;
+      const file = document.getElementById('errFile').files[0];
+      const isPrivate = document.getElementById('errIsPrivate').checked;
+
+      const save = (imgBase64) => {
+        errors.push({ id: Date.now(), sub: activeSubject, topic, desc, img: imgBase64, owner: currentUser, isPrivate, date: new Date().toLocaleDateString('tr-TR') });
+        localStorage.setItem('yks_errors', JSON.stringify(errors));
+        renderErrors();
+        document.getElementById('errDesc').value = '';
+        document.getElementById('errTopic').value = '';
+      };
+
+      if(file) {
+        const r = new FileReader();
+        r.onload = (e) => save(e.target.result);
+        r.readAsDataURL(file);
+      } else { save(null); }
+    }
+
+    function renderErrors() {
+      const filtered = errors.filter(e => e.sub === activeSubject);
+      document.getElementById('errorFeed').innerHTML = filtered.map(e => `
+        <div class="error-post">
+          <div class="error-header">
+            <span>👤 ${e.owner} ${e.isPrivate ? '(🔒 Gizli)' : ''}</span>
+            <span>📌 ${e.topic} | ${e.date}</span>
+          </div>
+          <p style="font-size:13px;">${e.desc}</p>
+          ${e.img ? `<img src="${e.img}" class="error-img">` : ''}
+        </div>
+      `).join('');
+    }
+
+    let details = JSON.parse(localStorage.getItem('yks_details') || '[]');
+    function addSubjectDetail() {
+      const text = document.getElementById('detText').value;
+      if(!text) return;
+      details.push({ sub: activeSubject, text, owner: currentUser });
+      localStorage.setItem('yks_details', JSON.stringify(details));
+      renderDetails();
+      document.getElementById('detText').value = '';
+    }
+    function renderDetails() {
+      document.getElementById('detailsFeed').innerHTML = details.filter(d => d.sub === activeSubject).map(d => `
+        <div style="background:var(--card-inner); border:1px solid var(--border); padding:10px; border-radius:8px; margin-bottom:8px; font-size:13px;">
+          <small style="color:var(--accent)">💡 ${d.owner} paylaştı:</small>
+          <p style="margin-top:4px;">${d.text}</p>
+        </div>
+      `).join('');
+    }
+
+    // DENEME TAKİBİ (TYT/AYT AYRI DERS BAZLI)
     function switchTrialTab(type, btn) {
       document.querySelectorAll('#p-analysis .sub-tab-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
@@ -230,21 +582,6 @@
       document.getElementById('trial-ayt-box').style.display = type === 'ayt' ? 'block' : 'none';
     }
 
-    // TDK KELİMELERİ
-    const tdkWords = [
-      { w: "Müteakip", m: "Sonradan gelen" },
-      { w: "Girift", m: "Karmaşık" },
-      { w: "Süreğen", m: "Kronik" },
-      { w: "İlliyet", m: "Neden-sonuç bağı" },
-      { w: "Ketum", m: "Sır saklayan" }
-    ];
-    function initTDK() {
-      document.getElementById('tdkContainer').innerHTML = tdkWords.map(i => `
-        <div class="tdk-card"><div class="tdk-word">${i.w}</div><div class="tdk-meaning">${i.m}</div></div>
-      `).join('');
-    }
-
-    // DENEME KAYDI (TYT / AYT)
     function saveTrial(type) {
       const prefix = type.toLowerCase();
       const title = document.getElementById(prefix + 'Title').value;
@@ -309,7 +646,7 @@
       `).join('');
     }
 
-    // SOHBET SİSTEMİ (FIREBASE CANLI)
+    // SOHBET (FIREBASE CANLI)
     function sendMessage() {
       const input = document.getElementById('chatInput');
       if(!input.value) return;
