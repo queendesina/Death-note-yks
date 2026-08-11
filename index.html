@@ -3,144 +3,180 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>YKS Death Note - Study Hub</title>
+  <title>YKS Death Note - Pro</title>
   <style>
-    :root { --primary: #6366f1; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --border: #334155; }
-    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 15px; margin: 0; padding-bottom: 80px; }
-    .card { background: var(--card); padding: 16px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 12px; }
-    .btn { background: var(--primary); color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; margin-top:5px; }
-    .page-panel { display: none; } .page-panel.active { display: block; }
-    .nav-bottom { position: fixed; bottom: 0; left: 0; right: 0; background: #0f172a; border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 10px; }
-    .nav-item { color: #94a3b8; cursor: pointer; font-size: 12px; text-align: center; }
+    :root { --primary: #6366f1; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --border: #334155; --accent: #22c55e; }
+    body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 15px; background: var(--bg); color: var(--text); padding-bottom: 85px; box-sizing: border-box; }
+    .card { background: var(--card); padding: 16px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 15px; }
+    .btn { background: var(--primary); color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 6px; }
+    .btn-secondary { background: #475569; }
+    .btn-danger { background: #ef4444; }
+    .btn-success { background: #22c55e; }
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #1e293b; border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 10px 0; z-index: 100; }
+    .nav-item { border: none; background: none; color: #94a3b8; font-weight: bold; font-size: 11px; cursor: pointer; text-align: center; }
     .nav-item.active { color: #818cf8; }
-    input, textarea, select { width: 100%; padding: 8px; margin: 5px 0; background: #0f172a; border: 1px solid var(--border); color: white; border-radius: 6px; }
-    .grid-subjects { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .subject-detail { display: none; }
-    .subject-detail.active { display: block; }
+    input, textarea, select { width: 100%; padding: 10px; margin: 6px 0; border: 1px solid var(--border); background: #0f172a; color: white; border-radius: 8px; }
+    .todo-item { display: flex; align-items: center; justify-content: space-between; background: #0f172a; padding: 10px; border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border); }
+    .todo-item.done span { text-decoration: line-through; color: #64748b; }
+    .chat-box { height: 250px; overflow-y: auto; background: #0f172a; border-radius: 8px; padding: 10px; margin-bottom: 10px; border: 1px solid var(--border); }
+    .chat-msg { margin-bottom: 8px; padding: 8px 12px; border-radius: 8px; max-width: 80%; }
+    .chat-msg.me { background: #4338ca; margin-left: auto; text-align: right; }
+    .chat-msg.other { background: #334155; margin-right: auto; }
+    .page-panel { display: none; }
+    .page-panel.active { display: block; }
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; text-align: center; margin-top: 10px; }
+    .stat-card { background: #0f172a; padding: 10px; border-radius: 8px; border: 1px solid var(--border); }
   </style>
 </head>
 <body>
 
-  <!-- 1. ANASAYFA (TIMER) -->
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+    <h2 style="margin:0; color:#818cf8;">YKS Death Note</h2>
+    <span style="font-size:12px; color:#94a3b8;">🔒 Kişisel Panel</span>
+  </div>
+
+  <!-- 1. ANASAYFA: SAYAÇ & HEDEFLER -->
   <div id="panel-home" class="page-panel active">
-    <h3>⏱️ Çalışma Zamanı</h3>
-    <div class="card" style="text-align:center;">
-      <h1 id="timerDisplay">00:00:00</h1>
-      <input type="number" id="timerInput" placeholder="Dakika gir (Boş bırakırsan kronometre olur)">
-      <div style="display:flex; gap:5px;">
-        <button class="btn" onclick="startTimer()">Başlat</button>
-        <button class="btn" style="background:#ef4444" onclick="stopTimer()">Sıfırla</button>
+    <div class="card" style="text-align: center;">
+      <h4 style="margin: 0 0 8px 0;">⏱️ Çalışma Sayacı</h4>
+      <h1 id="timer" style="font-size: 40px; margin: 10px 0; color: #818cf8;">00:00:00</h1>
+      <div style="display:flex; gap:10px;">
+        <button id="timerBtn" class="btn" onclick="toggleTimer()">Başlat</button>
+        <button class="btn btn-secondary" onclick="resetTimer()">Sıfırla & Kaydet</button>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><small>Bugün</small><div id="statDaily">0 Sa</div></div>
+        <div class="stat-card"><small>Haftalık</small><div id="statWeekly">0 Sa</div></div>
+        <div class="stat-card"><small>Aylık</small><div id="statMonthly">0 Sa</div></div>
       </div>
     </div>
     <div class="card">
-        <h3>🎯 Günlük Hedef</h3>
-        <input type="text" id="goalInput" placeholder="Örn: 6 Saat / 500 Soru">
-        <button class="btn" onclick="addGoal()">Kaydet</button>
-        <div id="goalsList"></div>
+      <h3 style="margin-top: 0;">🎯 Hedeflerim</h3>
+      <input type="text" id="targetGoal" placeholder="Hedef (Örn: Günlük 6 Saat / 500 Soru)">
+      <select id="targetType"><option value="Günlük">Günlük</option><option value="Haftalık">Haftalık</option><option value="Aylık">Aylık</option></select>
+      <button class="btn btn-success" onclick="addGoal()">Ekle</button>
+      <div id="goalsList" style="margin-top:12px;"></div>
     </div>
   </div>
 
-  <!-- 2. PROGRAM -->
+  <!-- 2. PROGRAM & ARALIKLI TEKRAR -->
   <div id="panel-program" class="page-panel">
-    <h3>📅 Ders Programı</h3>
     <div class="card">
-      <input type="text" id="taskName" placeholder="Ders/Konu">
-      <input type="number" id="taskDuration" placeholder="Süre (dk)">
-      <label><input type="checkbox" id="useRepeat"> Tekrar Sistemini Uygula (2,7,15,30,45 gün)</label>
-      <button class="btn" onclick="addTask()">Ekle</button>
+      <h4>🔄 Aralıklı Tekrar (2-7-15-30-45 Gün)</h4>
+      <input type="text" id="topicName" placeholder="Konu Adı (Örn: TYT Mat - Üslü Sayılar)">
+      <button class="btn btn-success" onclick="addSpacedRepetition()">Tekrar Programı Oluştur</button>
     </div>
-    <div id="taskList"></div>
-  </div>
-
-  <!-- 3. DERSLER (HUB) -->
-  <div id="panel-subjects" class="page-panel">
-    <div id="subject-hub-main">
-        <h3>📚 Derslerim</h3>
-        <div class="grid-subjects" id="subjectGrid"></div>
-    </div>
-    <!-- Detay Paneli -->
-    <div id="subject-detail-view" class="subject-detail">
-        <button class="btn" onclick="backToHub()">⬅️ Geri Dön</button>
-        <h3 id="currentSubTitle"></h3>
-        <div class="card">
-            <h4>💡 Hafıza Kartları & Notlar</h4>
-            <textarea id="memCard" placeholder="Önemli bilgi yaz..."></textarea>
-            <button class="btn" onclick="saveMem()">Kaydet</button>
-        </div>
-        <div class="card">
-            <h4>⚠️ Hata Analizi (Soru Çözümü)</h4>
-            <textarea id="errDesc" placeholder="Yanlış yaptığın soruyu veya nedenini yaz..."></textarea>
-            <button class="btn" onclick="saveError()">Hatayı Kaydet</button>
-        </div>
+    <div class="card">
+      <h4>📋 Ders Programım</h4>
+      <div id="taskList"></div>
     </div>
   </div>
 
-  <!-- 4. ANALİZ -->
-  <div id="panel-analysis" class="page-panel">
-    <h3>📊 Genel Deneme Analizi</h3>
-    <div id="analyticsList"></div>
+  <!-- 3. ANALİZ PANELİ -->
+  <div id="panel-analytics" class="page-panel">
+    <div class="card">
+      <h4>📊 Deneme & Ruh Hali Analizi</h4>
+      <input type="date" id="anaDate">
+      <input type="text" id="anaTitle" placeholder="Deneme Adı">
+      <input type="number" id="anaNet" step="0.25" placeholder="Net Sayısı">
+      <textarea id="anaMissing" placeholder="Eksik Konular"></textarea>
+      <select id="anaMood">
+        <option>⚡ Odaklanmış</option><option>😴 Yorgun</option><option>😰 Stresli</option>
+      </select>
+      <button class="btn" onclick="saveAnalytics()">Kaydet</button>
+    </div>
+    <div class="card" id="analyticsHistory"></div>
   </div>
 
-  <!-- NAV -->
-  <div class="nav-bottom">
-    <div class="nav-item active" onclick="showPanel('home', this)">🏠<br>Sayaç</div>
-    <div class="nav-item" onclick="showPanel('program', this)">📅<br>Program</div>
-    <div class="nav-item" onclick="showPanel('subjects', this)">📚<br>Dersler</div>
-    <div class="nav-item" onclick="showPanel('analysis', this)">📊<br>Analiz</div>
+  <!-- 4. MESAJLAŞMA -->
+  <div id="panel-chat" class="page-panel">
+    <div class="card">
+      <h4>💬 Üye Mesajlaşma</h4>
+      <select id="chatTarget"><option>Ahmet (Tıp Adayı)</option><option>Zeynep (Sayısal)</option></select>
+      <div class="chat-box" id="chatBox"></div>
+      <div style="display:flex; gap:8px;">
+        <input type="text" id="chatInput" placeholder="Mesaj yaz...">
+        <button class="btn" style="width:auto" onclick="sendMessage()">Gönder</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ALT MÜNÜ -->
+  <div class="bottom-nav">
+    <button class="nav-item active" onclick="switchNav('home', this)">🏠<br>Anasayfa</button>
+    <button class="nav-item" onclick="switchNav('program', this)">📅<br>Program</button>
+    <button class="nav-item" onclick="switchNav('analytics', this)">📊<br>Analiz</button>
+    <button class="nav-item" onclick="switchNav('chat', this)">💬<br>Mesajlar</button>
   </div>
 
   <script>
-    // --- TIMER ---
-    let timerSec = 0; let interval; let isCountDown = false;
-    function startTimer() {
-      const mins = document.getElementById('timerInput').value;
-      if(mins && mins > 0) { isCountDown = true; timerSec = mins * 60; } 
-      else { isCountDown = false; timerSec = 0; }
-      interval = setInterval(() => {
-        if(isCountDown) { timerSec--; if(timerSec<=0) { stopTimer(); alert("Süre bitti!"); } } 
-        else { timerSec++; }
-        const h = Math.floor(timerSec/3600), m = Math.floor((timerSec%3600)/60), s = timerSec%60;
-        document.getElementById('timerDisplay').innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-      }, 1000);
+    // --- SAYAÇ ---
+    let seconds = localStorage.getItem('timer_seconds') ? parseInt(localStorage.getItem('timer_seconds')) : 0;
+    let timerId = null;
+    function updateTimerDisplay() {
+      const hrs = String(Math.floor(seconds / 3600)).padStart(2, '0');
+      const mins = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+      const secs = String(seconds % 60).padStart(2, '0');
+      document.getElementById('timer').innerText = `${hrs}:${mins}:${secs}`;
     }
-    function stopTimer() { clearInterval(interval); timerSec=0; document.getElementById('timerDisplay').innerText="00:00:00"; }
+    updateTimerDisplay();
+    function toggleTimer() {
+      if (timerId) { clearInterval(timerId); timerId = null; document.getElementById('timerBtn').innerText = 'Başlat'; }
+      else { timerId = setInterval(() => { seconds++; updateTimerDisplay(); localStorage.setItem('timer_seconds', seconds); }, 1000); document.getElementById('timerBtn').innerText = 'Durdur'; }
+    }
+    function resetTimer() {
+        const hours = (seconds / 3600).toFixed(1);
+        alert(hours + " saat çalışma kaydedildi.");
+        seconds = 0; updateTimerDisplay(); localStorage.setItem('timer_seconds', 0);
+    }
+    
+    // --- TEKRAR & PROGRAM ---
+    let tasks = JSON.parse(localStorage.getItem('yks_tasks')) || [];
+    function addSpacedRepetition() {
+      const topic = document.getElementById('topicName').value;
+      [2, 7, 15, 30, 45].forEach(days => {
+        let d = new Date(); d.setDate(d.getDate() + days);
+        tasks.push({ text: `Tekrar: ${topic}`, date: d.toLocaleDateString('tr-TR') });
+      });
+      localStorage.setItem('yks_tasks', JSON.stringify(tasks));
+      renderTasks(); alert("Tekrar periyotları oluşturuldu!");
+    }
+    function renderTasks() {
+      const list = document.getElementById('taskList');
+      list.innerHTML = tasks.map((t,i) => `<div class="todo-item"><span>${t.text} (${t.date})</span></div>`).join('');
+    }
+    
+    // --- ANALİZ ---
+    function saveAnalytics() {
+      const data = { date: document.getElementById('anaDate').value, title: document.getElementById('anaTitle').value, net: document.getElementById('anaNet').value };
+      let history = JSON.parse(localStorage.getItem('yks_analytics') || '[]');
+      history.unshift(data);
+      localStorage.setItem('yks_analytics', JSON.stringify(history));
+      renderAnalytics();
+    }
+    function renderAnalytics() {
+      const hist = JSON.parse(localStorage.getItem('yks_analytics') || '[]');
+      document.getElementById('analyticsHistory').innerHTML = hist.map(h => `<p>${h.date} - ${h.title}: <strong>${h.net} Net</strong></p>`).join('');
+    }
 
-    // --- DERS HUB ---
-    const subjects = ["Biyoloji", "Matematik", "Fizik", "Kimya", "Türkçe"];
-    function renderSubjects() {
-      document.getElementById('subjectGrid').innerHTML = subjects.map(s => `<div class="card" onclick="openSubject('${s}')" style="cursor:pointer; border:1px solid #818cf8;">${s}</div>`).join('');
-    }
-    function openSubject(s) {
-        document.getElementById('subject-hub-main').style.display = 'none';
-        document.getElementById('subject-detail-view').classList.add('active');
-        document.getElementById('currentSubTitle').innerText = s;
-    }
-    function backToHub() {
-        document.getElementById('subject-hub-main').style.display = 'block';
-        document.getElementById('subject-detail-view').classList.remove('active');
+    // --- SOHBET ---
+    function sendMessage() {
+        const input = document.getElementById('chatInput');
+        const box = document.getElementById('chatBox');
+        if(!input.value) return;
+        box.innerHTML += `<div class="chat-msg me">${input.value}</div>`;
+        input.value = '';
     }
 
-    // --- GENEL FONKSİYONLAR ---
-    function showPanel(p, el) {
-      document.querySelectorAll('.page-panel').forEach(div => div.classList.remove('active'));
-      document.getElementById('panel-' + p).classList.add('active');
-      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-      el.classList.add('active');
+    // --- NAV ---
+    function switchNav(panelName, btn) {
+      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.page-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('panel-' + panelName).classList.add('active');
     }
 
-    // Basit veri kaydetme (Local Storage ile çalışır)
-    function addTask() { 
-        const name = document.getElementById('taskName').value;
-        document.getElementById('taskList').innerHTML += `<div class="card">${name} eklendi.</div>`;
-    }
-    function addGoal() { 
-        const g = document.getElementById('goalInput').value;
-        document.getElementById('goalsList').innerHTML += `<div>✅ ${g}</div>`;
-    }
-    function saveMem() { alert("Hafıza kartı kaydedildi."); }
-    function saveError() { alert("Hata analizi kaydedildi."); }
-
-    renderSubjects();
+    renderTasks(); renderAnalytics();
   </script>
 </body>
 </html>
