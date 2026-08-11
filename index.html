@@ -34,8 +34,6 @@
     .total-display { font-size: 18px; font-weight: bold; color: var(--accent); margin: 12px 0; text-align: center; background: var(--card-inner); padding: 10px; border-radius: 8px; border: 1px solid var(--border); }
     .timer-display { font-size: 32px; font-weight: bold; text-align: center; color: var(--accent); margin: 15px 0; background: var(--bg); padding: 15px; border-radius: 8px; border: 1px solid var(--border); }
     .flex-row { display: flex; gap: 8px; }
-    .task-item { background: var(--card-inner); padding: 10px; margin-bottom: 6px; border-radius: 6px; font-size: 13px; display: flex; align-items: center; justify-content: space-between; }
-    .task-item.completed span { text-decoration: line-through; color: var(--text-muted); }
   </style>
 </head>
 <body>
@@ -103,14 +101,10 @@
 
       <!-- HATA HAVUZU -->
       <div class="card">
-        <h3>⚠️ Hata Havuzu (Soru & Fotoğraf Yükleme)</h3>
+        <h3>⚠️ Hata Havuzu (Soru & Fotoğraf Analizi)</h3>
         <input type="text" id="errTopic" placeholder="Konu Başlığı (Örn: Kalıtım Çaprazlama)">
         <textarea id="errDesc" rows="2" placeholder="Yanlış yapma sebebin ve doğrusu nedir? Açıkla..."></textarea>
-        
-        <!-- Tablet / Cihazdan Resim Yükleme (Dosya Seçici) -->
-        <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;">Soru Fotoğrafı Seç (Tabletten / Galeriden):</label>
-        <input type="file" id="errImageFile" accept="image/*" style="background:var(--bg); padding:6px;">
-
+        <input type="text" id="errPhotoUrl" placeholder="Soru Görsel Linki (İsteğe bağlı resim URL'si)">
         <label style="font-size:12px; display:flex; align-items:center; gap:6px; margin: 6px 0;">
           <input type="checkbox" id="errIsPrivate" style="width:auto; margin:0;"> Sadece benim hatalarımda göster (Özel)
         </label>
@@ -154,28 +148,17 @@
     <!-- 4. PROGRAM & AKILLI TEKRAR SİSTEMİ -->
     <div id="p-program" class="panel">
       <div class="card">
-        <h3>📅 Program & Akıllı Tekrar Sistemi</h3>
-        <select id="progTypeSelection">
-          <option value="gunluk">Günlük Görev</option>
-          <option value="haftalik">Haftalık Görev</option>
-        </select>
-        <input type="text" id="progTask" placeholder="Çalışılacak Konu / Görev (Örn: Integral Soru Çözümü)">
-        <input type="text" id="progDuration" placeholder="Süre / Hedef (Örn: 2 Saat veya 100 Soru)">
+        <h3>📅 Çalışma Programı & Akıllı Tekrar</h3>
+        <input type="text" id="progTask" placeholder="Çalışılan Konu / Görev">
         <label style="font-size:12px; display:flex; align-items:center; gap:6px; margin:6px 0;">
           <input type="checkbox" id="enableSmartRepeat" style="width:auto; margin:0;" checked> 
           Akıllı Tekrar Periyotlarını Uygula (2, 7, 15, 30, 45 Gün sonra otomatik plana ekle)
         </label>
-        <button class="btn" onclick="saveProgramTask()">Görev Ekle</button>
+        <button class="btn" onclick="saveProgramTask()">Programa Ekle</button>
       </div>
-
       <div class="card">
-        <h3>☀️ Günlük Program</h3>
-        <div id="dailyTaskList"></div>
-      </div>
-
-      <div class="card">
-        <h3>🗓️ Haftalık Program</h3>
-        <div id="weeklyTaskList"></div>
+        <h3>📋 Güncel Program & Tekrar Planı</h3>
+        <div id="programTaskList"></div>
       </div>
     </div>
 
@@ -251,6 +234,7 @@
     let currentUser = "";
     let currentEmail = "";
 
+    // Kronometre değişkenleri
     let secondsElapsed = 0;
     let timerInterval = null;
 
@@ -340,6 +324,7 @@
       });
     }
 
+    // Sabit TDK Örnek Kelimeler Havuzu
     function loadTdkWords() {
       const words = [
         "1. İftirak: Ayrılık, dağılma.",
@@ -356,7 +341,7 @@
       document.getElementById('tdkWordsList').innerHTML = words.join('<br>');
     }
 
-    // --- 2. DERSLER, HATA HAVUZU & FOTOĞRAF YÜKLEME ---
+    // --- 2. DERSLER, HATA HAVUZU & DETAYLAR ---
     function loadLessonData() {
       renderErrors();
       renderDetails();
@@ -366,31 +351,19 @@
       const lesson = document.getElementById('selectedLesson').value;
       const topic = document.getElementById('errTopic').value.trim();
       const desc = document.getElementById('errDesc').value.trim();
-      const fileInput = document.getElementById('errImageFile');
+      const photo = document.getElementById('errPhotoUrl').value.trim();
       const isPrivate = document.getElementById('errIsPrivate').checked;
 
       if(!topic || !desc) return alert("Konu ve açıklama zorunludur!");
 
-      if (fileInput.files && fileInput.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          pushErrorData(lesson, topic, desc, e.target.result, isPrivate);
-        };
-        reader.readAsDataURL(fileInput.files[0]);
-      } else {
-        pushErrorData(lesson, topic, desc, "", isPrivate);
-      }
-    }
-
-    function pushErrorData(lesson, topic, desc, photoBase64, isPrivate) {
       db.ref('lessons/' + lesson + '/errors').push({
-        topic, desc, photo: photoBase64, isPrivate, user: currentUser,
+        topic, desc, photo, isPrivate, user: currentUser,
         date: new Date().toLocaleDateString('tr-TR')
       });
       document.getElementById('errTopic').value = '';
       document.getElementById('errDesc').value = '';
-      document.getElementById('errImageFile').value = '';
-      alert("Hata havuzuna ve soru analizine eklendi!");
+      document.getElementById('errPhotoUrl').value = '';
+      alert("Hata havuzuna eklendi!");
     }
 
     function renderErrors() {
@@ -403,7 +376,7 @@
         if(data) {
           Object.values(data).forEach(e => {
             if(filter === 'all' || (filter === 'mine' && e.user === currentUser) || !e.isPrivate || e.user === currentUser) {
-              const imgHtml = e.photo ? `<br><a href="${e.photo}" target="_blank"><img src="${e.photo}" style="max-width:100%; max-height:200px; border-radius:6px; margin-top:6px;" alt="Soru Görseli"></a>` : '';
+              const imgHtml = e.photo ? `<br><a href="${e.photo}" target="_blank"><img src="${e.photo}" style="max-width:100%; max-height:150px; border-radius:6px; margin-top:6px;" alt="Soru Görseli"></a>` : '';
               const privBadge = e.isPrivate ? `<span class="badge" style="background:var(--danger);">Özel</span>` : '';
               list.innerHTML += `<div style="background:var(--card-inner); padding:10px; margin-bottom:8px; border-radius:8px; font-size:13px;">
                 ${privBadge} <b>[${e.topic}]</b> - <span style="color:var(--text-muted);">@${e.user}</span>
@@ -489,700 +462,42 @@
       });
     }
 
-    // --- 4. PROGRAM & AKILLI TEKRAR (GÜNLÜK / HAFTALIK - TIKLama / ÜSTÜ ÇİZME) ---
+    // --- 4. PROGRAM & AKILLI TEKRAR (2, 7, 15, 30, 45 gün) ---
     function saveProgramTask() {
-      const type = document.getElementById('progTypeSelection').value; // gunluk veya haftalik
       const task = document.getElementById('progTask').value.trim();
-      const duration = document.getElementById('progDuration').value.trim() || 'Süre belirtilmedi';
       const smart = document.getElementById('enableSmartRepeat').checked;
-
       if(!task) return alert("Görev adı boş olamaz!");
 
       const today = new Date();
-      db.ref('programs/' + currentUser).push({
-        task, duration, type, completed: false, date: today.toISOString().split('T')[0]
-      });
+      db.ref('programs/' + currentUser).push({ task, date: today.toISOString().split('T')[0], type: 'Ana Çalışma' });
 
-      if(smart && type === 'gunluk') {
+      if(smart) {
         const intervals = [2, 7, 15, 30, 45];
         intervals.forEach(days => {
           let repeatDate = new Date();
           repeatDate.setDate(today.getDate() + days);
           db.ref('programs/' + currentUser).push({
             task: `[Tekrar] ${task} (${days} Gün Tekrarı)`,
-            duration: 'Tekrar',
-            type: 'gunluk',
-            completed: false,
-            date: repeatDate.toISOString().split('T')[0]
+            date: repeatDate.toISOString().split('T')[0],
+            type: 'Tekrar'
           });
         });
       }
-
       document.getElementById('progTask').value = '';
-      document.getElementById('progDuration').value = '';
-      alert("Görev programa eklendi!");
-    }
-
-    function toggleTaskComplete(taskId, currentStatus) {
-      db.ref('programs/' + currentUser + '/' + taskId).update({ completed: !currentStatus });
+      alert("Program ve otomatik tekrar periyotları oluşturuldu!");
     }
 
     function listenProgramTasks() {
       db.ref('programs/' + currentUser).on('value', snap => {
         const data = snap.val();
-        const dailyList = document.getElementById('dailyTaskList');
-        const weeklyList = document.getElementById('weeklyTaskList');
-        dailyList.innerHTML = '';
-        weeklyList.innerHTML = '';
-
+        const list = document.getElementById('programTaskList');
+        list.innerHTML = '';
         if(data) {
           Object.entries(data).forEach(([id, p]) => {
-            const checkedAttr = p.completed ? 'checked' : '';
-            const itemClass = p.completed ? 'task-item completed' : 'task-item';
-            
-            const html = `
-              <div class="${itemClass}">
-                <div style="display:flex; align-items:center; gap:8px;">
-                  <input type="checkbox" ${checkedAttr} onclick="toggleTaskComplete('${id}', ${p.completed})" style="width:auto; margin:0; cursor:pointer;">
-                  <div>
-                    <span><b>${p.task}</b></span><br>
-                    <small style="color:var(--text-muted);">Süre/Hedef: ${p.duration} | Tarih: ${p.date}</small>
-                  </div>
-                </div>
-                <button onclick="db.ref('programs/${currentUser}/${id}').remove()" style="background:var(--danger); border:none; color:white; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px;">Sil</button>
-              </div>
-            `;
-
-            if(p.type === 'haftalik') {
-              weeklyList.innerHTML += html;
-            } else {
-              dailyList.innerHTML += html;
-            }
-          });
-        }
-      });
-    }
-
-    // --- 5. KİŞİSEL DENEME ANALİZİ & RUH HALİ ---
-    function toggleExamFields() {
-      const type = document.getElementById('examType').value;
-      document.getElementById('tableTyt').style.display = type === 'TYT' ? 'table' : 'none';
-      document.getElementById('tableAyt').style.display = type === 'AYT' ? 'table' : 'none';
-      calcNet();
-    }
-
-    function getNetVal(d, y) {
-      const dVal = parseFloat(document.getElementById(d)?.value) || 0;
-      const yVal = parseFloat(document.getElementById(y)?.value) || 0;
-      return dVal - (yVal / 4);
-    }
-
-    function calcNet() {
-      const type = document.getElementById('examType').value;
-      let total = 0;
-      if(type === 'TYT') {
-        total += getNetVal('t_trD', 't_trY') + getNetVal('t_sosD', 't_sosY') + getNetVal('t_matD', 't_matY') + getNetVal('t_geoD', 't_geoY') + getNetVal('t_fizD', 't_fizY') + getNetVal('t_kimD', 't_kimY') + getNetVal('t_biyoD', 't_biyoY');
-      } else {
-        total += getNetVal('a_matD', 'a_matY') + getNetVal('a_geoD', 'a_geoY') + getNetVal('a_fizD', 'a_fizY') + getNetVal('a_kimD', 'a_kimY') + getNetVal('a_biyoD', 'a_biyoY');
-      }
-      document.getElementById('liveNet').innerText = total.toFixed(2);
-      return total.toFixed(2);
-    }
-
-    function saveExamRecord() {
-      const type = document.getElementById('examType').value;
-      const title = document.getElementById('examTitle').value.trim() || (type + ' Denemesi');
-      const mood = document.getElementById('examMood').value.trim() || 'Belirtilmedi';
-      const net = calcNet();
-
-      db.ref('exams/' + currentUser).push({
-        type, title, mood, net, date: new Date().toLocaleDateString('tr-TR')
-      });
-      alert(`Deneme Kaydedildi! Net: ${net}`);
-      document.getElementById('examTitle').value = '';
-      document.getElementById('examMood').value = '';
-      document.querySelectorAll('.dy-table input').forEach(i => i.value = '');
-      calcNet();
-    }
-
-    function listenMyExams() {
-      db.ref('exams/' + currentUser).on('value', snap => {
-        const data = snap.val();
-        const list = document.getElementById('myExamHistory');
-        list.innerHTML = '';
-        if(data) {
-          Object.values(data).forEach(ex => {
-            list.innerHTML += `<div style="background:var(--card-inner); padding:10px; margin-bottom:8px; border-radius:8px; font-size:13px;">
-              <b>[${ex.type}] ${ex.title}</b> - Net: <b style="color:var(--accent);">${ex.net}</b> <span style="float:right; color:var(--text-muted);">${ex.date}</span>
-              <p style="margin-top:6px; font-size:12px; color:var(--text-muted);">🧠 <b>Ruh Hali & Analiz:</b> ${ex.mood}</p>
+            list.innerHTML += `<div style="background:var(--card-inner); padding:8px; margin-bottom:6px; border-radius:6px; font-size:12px; display:flex; justify-content:space-between; align-items:center;">
+              <span>📅 <b>${p.date}</b>: ${p.task}</span>
+              <button onclick="db.ref('programs/${currentUser}/${id}').remove()" style="background:var(--danger); border:none; color:white; padding:2px 6px; border-radius:4px; cursor:pointer;">Sil</button>
             </div>`;
-          });
-        }
-      });
-    }
-  </script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>YKS Social Death Note - Ultimate Edition</title>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-
-  <style>
-    :root { --bg: #0b0f19; --card: #151f32; --card-inner: #1e2d4a; --primary: #6366f1; --accent: #10b981; --danger: #ef4444; --text: #f8fafc; --text-muted: #94a3b8; --border: #233354; }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; }
-    body { background: var(--bg); color: var(--text); padding-bottom: 85px; }
-    #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
-    #login-box { background: var(--card); border: 1px solid var(--border); padding: 25px; border-radius: 12px; width: 100%; max-width: 360px; text-align: center; }
-    header { background: var(--card); padding: 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
-    .user-badge { background: var(--card-inner); padding: 6px 12px; border-radius: 20px; font-size: 12px; border: 1px solid var(--border); cursor: pointer; }
-    .nav-bottom { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 8px 0; z-index: 1000; overflow-x: auto; }
-    .nav-btn { background: none; border: none; color: var(--text-muted); font-size: 10px; cursor: pointer; display: flex; flex-direction: column; align-items: center; white-space: nowrap; padding: 0 4px; }
-    .nav-btn.active { color: var(--primary); font-weight: bold; }
-    .container { padding: 15px; max-width: 900px; margin: 0 auto; }
-    .panel { display: none; } .panel.active { display: block; }
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 15px; }
-    input, textarea, select { width: 100%; padding: 10px; margin: 6px 0 12px 0; background: var(--bg); border: 1px solid var(--border); color: var(--text); border-radius: 8px; font-size: 14px; }
-    .btn { background: var(--primary); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; }
-    .btn-accent { background: var(--accent); }
-    .chat-box { height: 220px; overflow-y: auto; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px; margin-bottom: 10px; }
-    .chat-msg { margin-bottom: 8px; font-size: 13px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
-    .badge { display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 11px; background: var(--card-inner); border: 1px solid var(--border); margin-right: 4px; }
-    .dy-table { width: 100%; margin-bottom: 10px; border-collapse: collapse; } 
-    .dy-table th, .dy-table td { padding: 6px; text-align: center; border-bottom: 1px solid var(--border); font-size: 13px; } 
-    .dy-table input { margin: 0; text-align: center; padding: 6px; }
-    .total-display { font-size: 18px; font-weight: bold; color: var(--accent); margin: 12px 0; text-align: center; background: var(--card-inner); padding: 10px; border-radius: 8px; border: 1px solid var(--border); }
-    .timer-display { font-size: 32px; font-weight: bold; text-align: center; color: var(--accent); margin: 15px 0; background: var(--bg); padding: 15px; border-radius: 8px; border: 1px solid var(--border); }
-    .flex-row { display: flex; gap: 8px; }
-    .task-item { background: var(--card-inner); padding: 10px; margin-bottom: 6px; border-radius: 6px; font-size: 13px; display: flex; align-items: center; justify-content: space-between; }
-    .task-item.completed span { text-decoration: line-through; color: var(--text-muted); }
-  </style>
-</head>
-<body>
-
-  <!-- GİRİŞ PANELİ -->
-  <div id="login-overlay">
-    <div id="login-box">
-      <h2 style="color: var(--primary); margin-bottom: 10px;">🔒 YKS Özel Platform</h2>
-      <p style="font-size:12px; color:var(--text-muted); margin-bottom:15px;">Devam etmek için hesabınla giriş yap.</p>
-      <input type="email" id="emailInput" placeholder="E-posta">
-      <input type="password" id="passInput" placeholder="Şifre">
-      <button class="btn" onclick="loginWithAuth()">Giriş Yap / Kayıt Ol</button>
-    </div>
-  </div>
-
-  <header>
-    <div style="font-weight: bold; color: var(--primary);">YKS Social DeathNote</div>
-    <div class="user-badge" id="currentUserDisplay" onclick="logoutWithAuth()">👤 Giriş Yapılmadı</div>
-  </header>
-
-  <div class="container">
-
-    <!-- 1. AKIŞ & MESAJLAŞMA PANELİ -->
-    <div id="p-chat" class="panel active">
-      <div class="card">
-        <h3>💬 Sosyal Akış & Özel Mesaj</h3>
-        <select id="msgTarget" style="margin-bottom:8px;">
-          <option value="general">Genel Sohbet (Herkes Görür)</option>
-        </select>
-        <div class="chat-box" id="chatBox"></div>
-        <div class="flex-row">
-          <input type="text" id="chatInput" placeholder="Mesajını yaz..." style="margin:0;">
-          <button class="btn" style="width: auto;" onclick="sendMessage()">Gönder</button>
-        </div>
-      </div>
-      <div class="card">
-        <h3>📚 TDK Günün Kelimeleri</h3>
-        <div id="tdkWordsList" style="font-size:13px; color:var(--text-muted);">Yükleniyor...</div>
-      </div>
-    </div>
-
-    <!-- 2. DERSLER & HATA HAVUZU & DETAYLAR -->
-    <div id="p-lessons" class="panel">
-      <div class="card">
-        <h3>🎯 Ders Havuzu & Analiz</h3>
-        <select id="selectedLesson" onchange="loadLessonData()">
-          <optgroup label="TYT Dersleri">
-            <option value="tyt_turkce">Türkçe</option>
-            <option value="tyt_sosyal">Sosyal Bilgiler</option>
-            <option value="tyt_matematik">Temel Matematik</option>
-            <option value="tyt_geometri">Geometri</option>
-            <option value="tyt_fizik">Fizik (TYT)</option>
-            <option value="tyt_kimya">Kimya (TYT)</option>
-            <option value="tyt_biyoloji">Biyoloji (TYT)</option>
-          </optgroup>
-          <optgroup label="AYT Dersleri">
-            <option value="ayt_matematik">Matematik (AYT)</option>
-            <option value="ayt_geometri">Geometri (AYT)</option>
-            <option value="ayt_fizik">Fizik (AYT)</option>
-            <option value="ayt_kimya">Kimya (AYT)</option>
-            <option value="ayt_biyoloji">Biyoloji (AYT)</option>
-          </optgroup>
-        </select>
-      </div>
-
-      <!-- HATA HAVUZU -->
-      <div class="card">
-        <h3>⚠️ Hata Havuzu (Soru & Fotoğraf Yükleme)</h3>
-        <input type="text" id="errTopic" placeholder="Konu Başlığı (Örn: Kalıtım Çaprazlama)">
-        <textarea id="errDesc" rows="2" placeholder="Yanlış yapma sebebin ve doğrusu nedir? Açıkla..."></textarea>
-        
-        <!-- Tablet / Cihazdan Resim Yükleme (Dosya Seçici) -->
-        <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;">Soru Fotoğrafı Seç (Tabletten / Galeriden):</label>
-        <input type="file" id="errImageFile" accept="image/*" style="background:var(--bg); padding:6px;">
-
-        <label style="font-size:12px; display:flex; align-items:center; gap:6px; margin: 6px 0;">
-          <input type="checkbox" id="errIsPrivate" style="width:auto; margin:0;"> Sadece benim hatalarımda göster (Özel)
-        </label>
-        <button class="btn btn-accent" onclick="saveErrorQuestion()">Hata Havuzuna Ekle</button>
-        <hr style="border:0; border-top:1px solid var(--border); margin:15px 0;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-          <span style="font-size:13px; font-weight:bold;">Sorular & Hatalar:</span>
-          <select id="errFilter" onchange="renderErrors()" style="width:140px; margin:0; padding:4px; font-size:11px;">
-            <option value="all">Tüm Herkesin</option>
-            <option value="mine">Sadece Benim</option>
-          </select>
-        </div>
-        <div id="lessonErrorList"></div>
-      </div>
-
-      <!-- KENARDA KÖŞEDE KALMIŞ DETAYLAR -->
-      <div class="card">
-        <h3>💡 Kenarda Köşede Kalmış Detaylar</h3>
-        <textarea id="detailNote" rows="2" placeholder="İlk defa duyduğun veya unutulan önemli bir bilgi yaz..."></textarea>
-        <button class="btn" onclick="saveDetailNote()">Detay Notu Ekle</button>
-        <div id="lessonDetailList" style="margin-top:10px;"></div>
-      </div>
-    </div>
-
-    <!-- 3. KRONOMETRE & ÇALIŞMA SAATİ -->
-    <div id="p-timer" class="panel">
-      <div class="card">
-        <h3>⏱️ Çalışma Kronometresi</h3>
-        <div class="timer-display" id="chronometerDisplay">00:00:00</div>
-        <div class="flex-row">
-          <button class="btn btn-accent" onclick="startChronometer()">Başlat</button>
-          <button class="btn" style="background:var(--danger);" onclick="stopChronometer()">Durdur & Kaydet</button>
-        </div>
-      </div>
-      <div class="card">
-        <h3>📈 Çalışma Süreleri Analizi</h3>
-        <div id="studyHoursSummary" style="font-size:13px; color:var(--text-muted);">Yükleniyor...</div>
-      </div>
-    </div>
-
-    <!-- 4. PROGRAM & AKILLI TEKRAR SİSTEMİ -->
-    <div id="p-program" class="panel">
-      <div class="card">
-        <h3>📅 Program & Akıllı Tekrar Sistemi</h3>
-        <select id="progTypeSelection">
-          <option value="gunluk">Günlük Görev</option>
-          <option value="haftalik">Haftalık Görev</option>
-        </select>
-        <input type="text" id="progTask" placeholder="Çalışılacak Konu / Görev (Örn: Integral Soru Çözümü)">
-        <input type="text" id="progDuration" placeholder="Süre / Hedef (Örn: 2 Saat veya 100 Soru)">
-        <label style="font-size:12px; display:flex; align-items:center; gap:6px; margin:6px 0;">
-          <input type="checkbox" id="enableSmartRepeat" style="width:auto; margin:0;" checked> 
-          Akıllı Tekrar Periyotlarını Uygula (2, 7, 15, 30, 45 Gün sonra otomatik plana ekle)
-        </label>
-        <button class="btn" onclick="saveProgramTask()">Görev Ekle</button>
-      </div>
-
-      <div class="card">
-        <h3>☀️ Günlük Program</h3>
-        <div id="dailyTaskList"></div>
-      </div>
-
-      <div class="card">
-        <h3>🗓️ Haftalık Program</h3>
-        <div id="weeklyTaskList"></div>
-      </div>
-    </div>
-
-    <!-- 5. KİŞİSEL DENEME ANALİZİ -->
-    <div id="p-analysis" class="panel">
-      <div class="card">
-        <h3>📊 Deneme Analizi & Ruh Hali Takibi</h3>
-        <select id="examType" onchange="toggleExamFields()">
-          <option value="TYT">TYT Denemesi</option>
-          <option value="AYT">AYT Denemesi</option>
-        </select>
-        <input type="text" id="examTitle" placeholder="Deneme Adı (Örn: 3D Yayınları 1)">
-        <textarea id="examMood" rows="2" placeholder="Ruh hali analizi, sınav esnasındaki psikoloji ve eksik çıkarılan konular..."></textarea>
-
-        <!-- TYT TABLOSU -->
-        <table class="dy-table" id="tableTyt">
-          <tr><th>Ders</th><th>Doğru</th><th>Yanlış</th></tr>
-          <tr><td>Türkçe</td><td><input type="number" id="t_trD" placeholder="0" oninput="calcNet()"></td><td><input type="number" id="t_trY" placeholder="0" oninput="calcNet()"></td></tr>
-          <tr><td>Sosyal</td><td><input type="number" id="t_sosD" placeholder="0" oninput="calcNet()"></td><td><input type="number" id="t_sosY" placeholder="0" oninput="calcNet()"></td></tr>
-          <tr><td>Matematik</td><td><input type="number" id="t_matD" placeholder="0" oninput="calcNet()"></td><td><input type="number" id="t_matY" placeholder="0" oninput="calcNet()"></td></tr>
-          <tr><td>Geometri</td><td><input type="number" id="t_geoD" placeholder="0" oninput="calcNet()"></td><td><input type="number" id="t_geoY" placeholder="0" oninput="calcNet()"></td></tr>
-          <tr><td>Fizik</td><td><input type="number" id="t_fizD" placeholder="0" oninput="calcNet()"></td><td><input type="number" id="t_fizY" placeholder="0" oninput="calcNet()"></td></tr>
-          <tr><td>Kimya</td><td><input type="number" id="t_kimD" placeholder="0" oninput="calcNet()"></td><td><input type="number" id="t_kimY" placeholder="0" oninput="calcNet()"></td></tr>
-          <tr><td>Biyoloji</td><td><input type="number" id="t_biyoD" placeholder="0" oninput="calcNet()"></td><td><input type="number" id="t_biyoY" placeholder="0" oninput="calcNet()"></td></tr>
-        </table>
-
-        <!-- AYT TABLOSU -->
-        <table class="dy-table" id="tableAyt" style="display:none;">
-          <tr><th>Ders</th><th>Doğru</th><th>Yanlış</th></tr>
-          <tr><td>Matematik</td><td><input type="number" id="a_matD" placeholder="0" oninput="calcNet()"></td><td><input type="number" id="a_matY" placeholder="0" oninput="calcNet()"></td></tr>
-          <tr><td>Geometri</td><td><input type="number" id="a_geoD" placeholder="0" oninput="calcNet()"></td><td><input type="number" id="a_geoY" placeholder="0" oninput="calcNet()"></td></tr>
-          <tr><td>Fizik</td><td><input type="number" id="a_fizD" placeholder="0" oninput="calcNet()"></td><td><input type="number" id="a_fizY" placeholder="0" oninput="calcNet()"></td></tr>
-          <tr><td>Kimya</td><td><input type="number" id="a_kimD" placeholder="0" oninput="calcNet()"></td><td><input type="number" id="a_kimY" placeholder="0" oninput="calcNet()"></td></tr>
-          <tr><td>Biyoloji</td><td><input type="number" id="a_biyoD" placeholder="0" oninput="calcNet()"></td><td><input type="number" id="a_biyoY" placeholder="0" oninput="calcNet()"></td></tr>
-        </table>
-
-        <div class="total-display">Toplam Net: <span id="liveNet">0.00</span></div>
-        <button class="btn" onclick="saveExamRecord()">Denemeyi Kaydet</button>
-      </div>
-
-      <div class="card">
-        <h3>📈 Geçmiş Denemelerim (Ruh Hali & Analiz)</h3>
-        <div id="myExamHistory"></div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- ALT NAVİGASYON -->
-  <div class="nav-bottom">
-    <button class="nav-btn active" onclick="switchPanel('chat', this)">💬<span>Akış</span></button>
-    <button class="nav-btn" onclick="switchPanel('lessons', this)">🎯<span>Dersler</span></button>
-    <button class="nav-btn" onclick="switchPanel('timer', this)">⏱️<span>Kronometre</span></button>
-    <button class="nav-btn" onclick="switchPanel('program', this)">📅<span>Program</span></button>
-    <button class="nav-btn" onclick="switchPanel('analysis', this)">📊<span>Denemeler</span></button>
-  </div>
-
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyC5OH9GMtcagdpcPLwmUXysWKkAVZJxAsg",
-      authDomain: "yksapp-175db.firebaseapp.com",
-      databaseURL: "https://yksapp-175db-default-rtdb.firebaseio.com",
-      projectId: "yksapp-175db",
-      storageBucket: "yksapp-175db.firebasestorage.app",
-      messagingSenderId: "838249144502",
-      appId: "1:838249144502:web:fbe774b445cd5f1dc7c617",
-      measurementId: "G-GZWH8RNDHR"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const auth = firebase.auth();
-    let currentUser = "";
-    let currentEmail = "";
-
-    let secondsElapsed = 0;
-    let timerInterval = null;
-
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        currentUser = user.email.split('@')[0];
-        currentEmail = user.email;
-        document.getElementById('login-overlay').style.display = 'none';
-        document.getElementById('currentUserDisplay').innerText = '👤 ' + currentUser;
-        initListeners();
-      } else {
-        document.getElementById('login-overlay').style.display = 'flex';
-      }
-    });
-
-    function loginWithAuth() {
-      const email = document.getElementById('emailInput').value;
-      const pass = document.getElementById('passInput').value;
-      auth.signInWithEmailAndPassword(email, pass).catch(() => {
-        auth.createUserWithEmailAndPassword(email, pass).catch(err => alert("Hata: " + err.message));
-      });
-    }
-
-    function logoutWithAuth() { auth.signOut(); }
-
-    function switchPanel(panelId, btn) {
-      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById('p-' + panelId).classList.add('active');
-      btn.classList.add('active');
-    }
-
-    function initListeners() {
-      listenChat();
-      loadTdkWords();
-      loadLessonData();
-      listenStudyHours();
-      listenProgramTasks();
-      listenMyExams();
-      loadUsersList();
-    }
-
-    // --- 1. SOHBET & ÖZEL MESAJ & TDK ---
-    function loadUsersList() {
-      db.ref('users_presence').set({ [currentUser]: true });
-      db.ref('users_presence').on('value', snap => {
-        const users = snap.val();
-        const sel = document.getElementById('msgTarget');
-        sel.innerHTML = '<option value="general">Genel Sohbet (Herkes Görür)</option>';
-        if(users) {
-          Object.keys(users).forEach(u => {
-            if(u !== currentUser) {
-              sel.innerHTML += `<option value="${u}">Özel Mesaj: @${u}</option>`;
-            }
-          });
-        }
-      });
-    }
-
-    function sendMessage() {
-      const input = document.getElementById('chatInput');
-      const target = document.getElementById('msgTarget').value;
-      if(!input.value.trim()) return;
-      db.ref('messages').push({
-        sender: currentUser,
-        target: target,
-        text: input.value.trim(),
-        date: new Date().toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'})
-      });
-      input.value = '';
-    }
-
-    function listenChat() {
-      db.ref('messages').on('value', snap => {
-        const data = snap.val();
-        const box = document.getElementById('chatBox');
-        box.innerHTML = '';
-        if(data) {
-          Object.values(data).forEach(m => {
-            if(m.target === 'general' || m.target === currentUser || m.sender === currentUser) {
-              const badge = m.target !== 'general' ? `<span class="badge" style="background:var(--primary);">Özel (@${m.target})</span>` : '';
-              box.innerHTML += `<div class="chat-msg">${badge}<b>${m.sender}:</b> ${m.text} <span style="float:right; font-size:10px; color:var(--text-muted);">${m.date}</span></div>`;
-            }
-          });
-          box.scrollTop = box.scrollHeight;
-        }
-      });
-    }
-
-    function loadTdkWords() {
-      const words = [
-        "1. İftirak: Ayrılık, dağılma.",
-        "2. Müphem: Belirsiz, anlaşılamayan.",
-        "3. Metanet: Dayanma gücü, sıkıntılara göğüs germe.",
-        "4. Muvazene: Denge.",
-        "5. Mahzun: Üzgün, kederli.",
-        "6. Basiret: Sezgi, ileri görüşlülük.",
-        "7. Istırap: Acı, sıkıntı.",
-        "8. Megaloman: Kendini beğenmiş.",
-        "9. Niyaz: Yalvarma, yakarış.",
-        "10. Vukuat: Olaylar, olay."
-      ];
-      document.getElementById('tdkWordsList').innerHTML = words.join('<br>');
-    }
-
-    // --- 2. DERSLER, HATA HAVUZU & FOTOĞRAF YÜKLEME ---
-    function loadLessonData() {
-      renderErrors();
-      renderDetails();
-    }
-
-    function saveErrorQuestion() {
-      const lesson = document.getElementById('selectedLesson').value;
-      const topic = document.getElementById('errTopic').value.trim();
-      const desc = document.getElementById('errDesc').value.trim();
-      const fileInput = document.getElementById('errImageFile');
-      const isPrivate = document.getElementById('errIsPrivate').checked;
-
-      if(!topic || !desc) return alert("Konu ve açıklama zorunludur!");
-
-      if (fileInput.files && fileInput.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          pushErrorData(lesson, topic, desc, e.target.result, isPrivate);
-        };
-        reader.readAsDataURL(fileInput.files[0]);
-      } else {
-        pushErrorData(lesson, topic, desc, "", isPrivate);
-      }
-    }
-
-    function pushErrorData(lesson, topic, desc, photoBase64, isPrivate) {
-      db.ref('lessons/' + lesson + '/errors').push({
-        topic, desc, photo: photoBase64, isPrivate, user: currentUser,
-        date: new Date().toLocaleDateString('tr-TR')
-      });
-      document.getElementById('errTopic').value = '';
-      document.getElementById('errDesc').value = '';
-      document.getElementById('errImageFile').value = '';
-      alert("Hata havuzuna ve soru analizine eklendi!");
-    }
-
-    function renderErrors() {
-      const lesson = document.getElementById('selectedLesson').value;
-      const filter = document.getElementById('errFilter').value;
-      db.ref('lessons/' + lesson + '/errors').on('value', snap => {
-        const data = snap.val();
-        const list = document.getElementById('lessonErrorList');
-        list.innerHTML = '';
-        if(data) {
-          Object.values(data).forEach(e => {
-            if(filter === 'all' || (filter === 'mine' && e.user === currentUser) || !e.isPrivate || e.user === currentUser) {
-              const imgHtml = e.photo ? `<br><a href="${e.photo}" target="_blank"><img src="${e.photo}" style="max-width:100%; max-height:200px; border-radius:6px; margin-top:6px;" alt="Soru Görseli"></a>` : '';
-              const privBadge = e.isPrivate ? `<span class="badge" style="background:var(--danger);">Özel</span>` : '';
-              list.innerHTML += `<div style="background:var(--card-inner); padding:10px; margin-bottom:8px; border-radius:8px; font-size:13px;">
-                ${privBadge} <b>[${e.topic}]</b> - <span style="color:var(--text-muted);">@${e.user}</span>
-                <p style="margin-top:4px;">${e.desc}</p>${imgHtml}
-              </div>`;
-            }
-          });
-        }
-      });
-    }
-
-    function saveDetailNote() {
-      const lesson = document.getElementById('selectedLesson').value;
-      const note = document.getElementById('detailNote').value.trim();
-      if(!note) return alert("Not boş olamaz!");
-      db.ref('lessons/' + lesson + '/details').push({
-        note, user: currentUser, date: new Date().toLocaleDateString('tr-TR')
-      });
-      document.getElementById('detailNote').value = '';
-      alert("Kenarda köşede kalmış detay eklendi!");
-    }
-
-    function renderDetails() {
-      const lesson = document.getElementById('selectedLesson').value;
-      db.ref('lessons/' + lesson + '/details').on('value', snap => {
-        const data = snap.val();
-        const list = document.getElementById('lessonDetailList');
-        list.innerHTML = '';
-        if(data) {
-          Object.values(data).forEach(d => {
-            list.innerHTML += `<div style="background:var(--card-inner); padding:8px; margin-bottom:6px; border-radius:6px; font-size:12px; border-left:3px solid var(--accent);">
-              💡 ${d.note} <span style="color:var(--text-muted); float:right;">@${d.user}</span>
-            </div>`;
-          });
-        }
-      });
-    }
-
-    // --- 3. KRONOMETRE & ÇALIŞMA SAATLERİ ---
-    function startChronometer() {
-      if(timerInterval) return;
-      timerInterval = setInterval(() => {
-        secondsElapsed++;
-        let h = Math.floor(secondsElapsed / 3600).toString().padStart(2, '0');
-        let m = Math.floor((secondsElapsed % 3600) / 60).toString().padStart(2, '0');
-        let s = (secondsElapsed % 60).toString().padStart(2, '0');
-        document.getElementById('chronometerDisplay').innerText = `${h}:${m}:${s}`;
-      }, 1000);
-    }
-
-    function stopChronometer() {
-      if(!timerInterval) return;
-      clearInterval(timerInterval);
-      timerInterval = null;
-      const hoursWorked = (secondsElapsed / 3600).toFixed(2);
-      if(hoursWorked > 0) {
-        db.ref('study_hours/' + currentUser).push({
-          hours: parseFloat(hoursWorked),
-          date: new Date().toISOString().split('T')[0]
-        });
-        alert(`Çalışma kaydedildi: ${hoursWorked} saat.`);
-      }
-      secondsElapsed = 0;
-      document.getElementById('chronometerDisplay').innerText = "00:00:00";
-    }
-
-    function listenStudyHours() {
-      db.ref('study_hours/' + currentUser).on('value', snap => {
-        const data = snap.val();
-        let daily = 0, weekly = 0, monthly = 0;
-        const today = new Date().toISOString().split('T')[0];
-        if(data) {
-          Object.values(data).forEach(sh => {
-            if(sh.date === today) daily += sh.hours;
-            weekly += sh.hours;
-            monthly += sh.hours;
-          });
-        }
-        document.getElementById('studyHoursSummary').innerHTML = `
-          📅 <b>Bugünkü Çalışma:</b> ${daily.toFixed(2)} Saat<br>
-          📊 <b>Toplam Kayıtlı Süre:</b> ${monthly.toFixed(2)} Saat
-        `;
-      });
-    }
-
-    // --- 4. PROGRAM & AKILLI TEKRAR (GÜNLÜK / HAFTALIK - TIKLama / ÜSTÜ ÇİZME) ---
-    function saveProgramTask() {
-      const type = document.getElementById('progTypeSelection').value; // gunluk veya haftalik
-      const task = document.getElementById('progTask').value.trim();
-      const duration = document.getElementById('progDuration').value.trim() || 'Süre belirtilmedi';
-      const smart = document.getElementById('enableSmartRepeat').checked;
-
-      if(!task) return alert("Görev adı boş olamaz!");
-
-      const today = new Date();
-      db.ref('programs/' + currentUser).push({
-        task, duration, type, completed: false, date: today.toISOString().split('T')[0]
-      });
-
-      if(smart && type === 'gunluk') {
-        const intervals = [2, 7, 15, 30, 45];
-        intervals.forEach(days => {
-          let repeatDate = new Date();
-          repeatDate.setDate(today.getDate() + days);
-          db.ref('programs/' + currentUser).push({
-            task: `[Tekrar] ${task} (${days} Gün Tekrarı)`,
-            duration: 'Tekrar',
-            type: 'gunluk',
-            completed: false,
-            date: repeatDate.toISOString().split('T')[0]
-          });
-        });
-      }
-
-      document.getElementById('progTask').value = '';
-      document.getElementById('progDuration').value = '';
-      alert("Görev programa eklendi!");
-    }
-
-    function toggleTaskComplete(taskId, currentStatus) {
-      db.ref('programs/' + currentUser + '/' + taskId).update({ completed: !currentStatus });
-    }
-
-    function listenProgramTasks() {
-      db.ref('programs/' + currentUser).on('value', snap => {
-        const data = snap.val();
-        const dailyList = document.getElementById('dailyTaskList');
-        const weeklyList = document.getElementById('weeklyTaskList');
-        dailyList.innerHTML = '';
-        weeklyList.innerHTML = '';
-
-        if(data) {
-          Object.entries(data).forEach(([id, p]) => {
-            const checkedAttr = p.completed ? 'checked' : '';
-            const itemClass = p.completed ? 'task-item completed' : 'task-item';
-            
-            const html = `
-              <div class="${itemClass}">
-                <div style="display:flex; align-items:center; gap:8px;">
-                  <input type="checkbox" ${checkedAttr} onclick="toggleTaskComplete('${id}', ${p.completed})" style="width:auto; margin:0; cursor:pointer;">
-                  <div>
-                    <span><b>${p.task}</b></span><br>
-                    <small style="color:var(--text-muted);">Süre/Hedef: ${p.duration} | Tarih: ${p.date}</small>
-                  </div>
-                </div>
-                <button onclick="db.ref('programs/${currentUser}/${id}').remove()" style="background:var(--danger); border:none; color:white; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px;">Sil</button>
-              </div>
-            `;
-
-            if(p.type === 'haftalik') {
-              weeklyList.innerHTML += html;
-            } else {
-              dailyList.innerHTML += html;
-            }
           });
         }
       });
